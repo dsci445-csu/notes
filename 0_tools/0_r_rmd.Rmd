@@ -1,0 +1,552 @@
+---
+title: "Tools: `R` and Rmarkdown"
+output:
+  pagedown::html_paged:
+    css: ["../style/my-style-page.css", "default-fonts", "default-page", "default"]
+    self_contained: true
+    number_sections: true
+---
+
+`R` (https://www.r-project.org) is a free, open source software environment for statistical computing and graphics that is available for every major platform. 
+
+RStudio (https://rstudio.com) is an integrated development environment (IDE) for `R`. It is also free, open source, and available for every major platform. It makes data analysis and projects in `R` go a bit smoother.
+
+
+<br/><br/>
+
+![](https://imgs.xkcd.com/comics/code_quality.png)
+
+https://xkcd.com/1513/
+
+**Alternative Text:** I honestly didn't think you could even USE emoji in variable names. Or that there were so many different crying ones.
+
+```{r echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(fig.height = 3)
+```
+
+
+# Getting Started with `R`
+
+We can use `R` like an overgrown calculator.
+
+```{r}
+# simple math
+5*(10 - 4) + 44
+
+# integer division
+7 %/% 2
+
+# modulo operator (Remainder)
+7 %% 2
+
+# powers
+1.5^3
+```
+
+\newpage
+
+We can use mathematical functions.
+
+```{r}
+# exponentiation
+exp(1)
+
+# logarithms
+log(100)
+log(100, base = 10)
+
+# trigonometric functions
+sin(pi/2)
+cos(pi)
+asin(1)
+```
+
+\pagebreak
+
+We can create variables using the assignment operator `<-`,
+
+```{r}
+# create some variables
+x <- 5
+class <- 400
+hello <- "world"
+```
+
+and then use those variables in our functions.
+
+```{r}
+# functions of variables
+log(x)
+class^2
+```
+
+There are some rules for variable naming.
+
+Variable names --
+
+1. Can't start with a number.
+
+2. Are case-sensitive.
+
+3. Can be the name of a predefined internal function or letter in `R` (e.g., c, q, t, C, D, F, T, I). Try [not]{.red} to use these.
+
+4. Cannot be reserved words that `R` (e.g., for, in, while, if, else, repeat, break, next).
+
+\pagebreak
+
+## Vectors
+
+Variables can store more than one value, called a *vector*. We can create vectors using the combine (`c()`) function.
+
+```{r}
+# store a vector
+y <- c(1, 2, 6, 10, 17)
+```
+
+When we perform functions on our vector, the result is elementwise.
+
+```{r}
+# elementwise function
+y/2
+```
+
+A vector must contain all values of the same type (i.e., numeric, integer, character, etc.).
+
+We can also make sequences of numbers using either `:` or `seq()`.
+
+```{r}
+# sequences
+a <- 1:5
+a
+b <- seq(1, 5, by = 1)
+b
+```
+
+[ ]{.pagebreak}
+
+We can **extract** values by index.
+
+```{r}
+a[3]
+```
+
+Indexing is pretty powerful.
+
+```{r}
+# indexing multiple items
+a[c(1, 3, 5)]
+a[1:3]
+```
+
+We can even tell `R` which elements we don't want.
+
+```{r}
+a[-3]
+```
+
+And we can index by **logical** values. `R` has logicals built in using `TRUE` and `FALSE` (`T` and `F` also work, but can be overwritten). Logicals can result from a comparison using
+
+- `<` : "less than"
+- `>` : "greater than"
+- `<=` : "less than or equal to"
+- `>=` : "greater than or equal to"
+- `==` : "is equal to"
+- `!=` : "not equal to"
+
+```{r}
+# indexing by vectors of logicals
+a[c(TRUE, TRUE, FALSE, FALSE, FALSE)]
+
+# indexing by calculated logicals
+a < 3
+a[a < 3]
+```
+
+We can combine elementwise logical vectors in the following way:
+
+- `&` : elementwise AND
+- `|` : elementwise OR
+
+```{r}
+c(TRUE, TRUE, FALSE) | c(FALSE, TRUE, FALSE)
+c(TRUE, TRUE, FALSE) & c(FALSE, TRUE, FALSE)
+```
+
+\pagebreak
+
+There are two more useful functions for looking at the start (head) and end (tail) of a vector.
+
+```{r}
+head(a, 2)
+tail(a, 2)
+```
+
+We can also modify elements in a vector.
+
+```{r}
+a[1] <- 0
+a[c(4, 5)] <- 100
+a
+```
+
+[ ]{.pagebreak}
+
+As mentioned, elements of a vector must all be the same type. So, changing an element of a vector to a different type will result in all elements being converted to the *most general* type.
+
+```{r}
+a
+a[1] <- ":-("
+a
+```
+
+By changing a value to a string, all the other values were also changed.
+
+There are many data types in `R`, numeric, integer, character (i.e., string), Date, and factor being the most common. We can convert between different types using the `as` series of functions.
+
+```{r}
+as.character(b)
+```
+
+There are a whole variety of useful functions to operate on vectors. A couple of the more common ones are `length`, which returns the length (number of elements) of a vector, and `sum`, which adds up all the elements of a vector.
+
+```{r}
+n <- length(b)
+n
+sum_b <- sum(b)
+sum_b
+```
+
+We can then create some statistics!
+
+```{r}
+mean_b <- sum_b/n
+sd_b <- sqrt(sum((b - mean_b)^2)/(n - 1))
+```
+
+But, we don't have to.
+
+```{r}
+mean(b)
+sd(b)
+summary(b)
+quantile(b, c(.25, .75))
+```
+
+\pagebreak
+
+## Data Frames
+
+Data frames are the data structure you will (probably) use the most in `R`. You can think of a data frame as any sort of rectangular data. It is easy to conceptualize as a table, where each column is a vector. Recall, each vector must have the same data type *within* the vector (column), but columns in a data frame need not be of the same type. Let's look at an example!
+
+```{r}
+# look at top 6 rows
+head(iris)
+
+# structure of the object
+str(iris)
+```
+
+This is Anderson's Iris data set (https://en.wikipedia.org/wiki/Iris_flower_data_set), available by default in `R`.
+
+Some facts about data frames:
+
+- Structured by rows and columns and can be indexed
+- Each column is a variable of one type
+- Column names or locations can be used to index a variable
+- Advice for naming variables applys to naming columns
+- Can be specified by grouping vectors of equal length as columns
+
+\pagebreak
+
+Data frames are indexed (similarly to vectors) with `[ ]`. 
+
+- `df[i, j]` will select the element of the data frame in the `i`th row and the `j`th column.
+- `df[i, ]` will select the entire `i`th row as a data frame
+- `df[ , j]` will select the entire `j`th column as a vector
+
+We can use logicals or vectors to index as well.
+
+```{r}
+iris[1, ]
+iris[, 1]
+iris[1, 1]
+```
+
+We can also select columns by name in two ways.
+
+```{r}
+iris$Species
+iris[, "Species"]
+```
+
+To add columns, create a new vector that is the same length as other columns. We can append new column to the data frame using the `$` operator or the `[]` operators.
+
+```{r}
+# make a copy of iris
+my_iris <- iris
+
+# add a column
+my_iris$sepal_len_square <- my_iris$Sepal.Length^2  
+head(my_iris)
+```
+
+It's quite easy to subset a data frame.
+
+```{r}
+my_iris[my_iris$sepal_len_square < 20, ]
+```
+
+We'll see another way to do this in Lab 2.
+
+We can create new data frames using the `data.frame()` function,
+
+```{r}
+df <- data.frame(NUMS = 1:5, 
+                 lets = letters[1:5],
+                 cols = c("green", "gold", "gold", "gold", "green"))
+```
+
+and we can change column names using the `names()` function.
+
+```{r}
+names(df)
+names(df)[1] <- "nums"
+
+df
+```
+
+There are other data structures available to you in `R`, namely lists and matrices. We will not cover these in the notes, but I encourage you to read more about them (https://faculty.nps.edu/sebuttre/home/R/lists.html and https://faculty.nps.edu/sebuttre/home/R/matrices.html).
+
+\pagebreak
+
+## Basic Programming
+
+We will cover three basic programming ideas: functions, conditionals, and loops.
+
+### Functions
+
+We have used many functions that are already built into `R` already. For example -- `exp()`, `log()`, `sin()`, `rep()`, `seq()`, `head()`, `tail()`, etc.
+
+But what if we want to use a function that doesn't exist?
+
+**We can write it!**
+
+Idea: We want to avoid repetitive coding because errors will creep in.
+Solution: Extract common core of the code, wrap it in a function, and make it reusable.
+
+The basic structure for writing a function is as follows:
+
+- Name
+- Input arguments (including names and default values)
+- Body (code)
+- Output values
+
+```{r}
+# we store a function in a named value
+# function is itself a function to create functions!
+# we specify the inputs that we can use inside the function
+# we can specify default values, but it is not necessary
+name <- function(input = FALSE) {
+  # body code goes here
+  
+  # return output vaues
+  return(input)
+}
+```
+
+Here is a more realistic first example:
+
+```{r}
+my_mean <- function(x) {
+  sum(x)/length(x)
+}
+```
+
+Let's test it out.
+
+```{r}
+my_mean(1:15)
+my_mean(c(1:15, NA))
+```
+
+Some advice for function writing:
+
+1. Start simple, then extend. 
+2. Test out each step of the way. 
+3. Don’t try too much at once.
+
+### Conditionals
+
+Conditionals are functions that control the flow of analysis. Conditionals determine if a specified condition is met (or not), then direct subsequent analysis or action depending on whether the condition is met (or not).
+
+```{r eval=FALSE}
+if(condition) {
+  # Some code that runs if condition is TRUE
+} else {
+  # Some code that runs if condition is TRUE
+}
+```
+
+- `condition` is a length one logical value, i.e. either `TRUE` or `FALSE`
+- We can use `&` and `|` to combine several conditions 
+- `!` negates condition
+
+For example, if we wanted to do something with `na.rm` from our function,
+
+```{r eval=FALSE}
+if(na.rm) x <- na.omit(x) # na.omit is a function that removes NA values
+```
+
+might be a good option.
+
+### Loops
+
+Loops (and their cousins the `apply()` function) are useful when we want to repeat the same block of code many times. Reducing the amount of typing we do can be nice, and if we have a lot of code that is essentially the same we can take advantage of looping. `R` offers several loops: for, while, repeat.
+
+For loops will run through a specified index and perform a set of code for each value of the indexing variable.
+
+```{r eval=FALSE}
+for(i in index values) {
+  # block of code
+  # can print values also
+  # code in here will most likely depend on i
+}
+```
+
+```{r}
+for(i in 1:3) {
+  print(i)
+}
+```
+
+```{r}
+for(species in unique(iris$Species)) {
+  subset_iris <- iris[iris$Species == species,]
+  avg <- mean(subset_iris$Sepal.Length)
+  print(paste(species, avg))
+}
+```
+
+While loops will run until a specified condition is no longer true.
+
+```{r}
+condition <- TRUE
+while(condition) {
+  # do stuff
+  # don't forget to eventually set the condition to false
+  # in the toy example below I check if the current seconds is divisible by 5
+  time <- Sys.time()
+  if(as.numeric(format(time, format = "%S")) %% 5 == 0) condition <- FALSE
+}
+print(time)
+```
+
+```{r}
+# we can also use while loops to iterate
+i <- 1
+while (i <= 5) {
+    print(i)
+    i <- i + 1
+}
+```
+
+[ ]{.pagebreak}
+
+## Packages
+
+Commonly used `R` functions are installed with base `R`.
+
+`R` packages containing more specialized `R` functions can be installed freely from CRAN servers using function `install.packages()`.
+
+After packages are installed, their functions can be loaded into the current `R` session using the function `library()`.
+
+Packages are contrbuted by `R` users just like you! 
+
+We will use some great packages in this class. Feel free to venture out and find your favorites (google R package + what you're trying to do to find more packages).
+
+## Additional resources
+
+You can get help with `R` functions within `R` by using the `help()` function, or typing `?` before a function name.
+
+Stackoverflow can be helpful -- if you have a question, maybe somebody else has already asked it (https://stackoverflow.com/questions/tagged/r).
+
+R Reference Card (https://cran.r-project.org/doc/contrib/Short-refcard.pdf)
+
+Useful Cheatsheets (https://www.rstudio.com/resources/cheatsheets/)
+
+R for Data Science (https://r4ds.had.co.nz)
+
+Advanced R (https://adv-r.hadley.nz)
+
+# Rmarkdown
+
+**Markdown** is a particular type of markup language that is designed to produce documents from text.
+
+Markdown is becoming a standard. Many websites will generate HTML from Markdown (e.g. GitHub, Stack Overflow, reddit, ...) and this course website is written in markdown as well.
+
+Markdown is easy for humans to read and write.
+
+```
+*italic*   
+**bold**
+```
+
+```
+# Header 1
+## Header 2
+### Header 3
+```
+
+```
+* Item 1
+* Item 2
+    + Item 2a
+    + Item 2b
+
+1. Item 1
+2. Item 2
+3. Item 3
+    + Item 3a
+    + Item 3b
+```
+
+```
+[linked phrase](http://example.com)
+
+A friend once said:
+
+> It's always better to give 
+> than to receive.
+```
+
+**Rmarkdown** is an authoring format that lets you incorporate the results from `R` code in your documents.
+
+It combines the core syntax of markdown with embedded `R` code chunks that are run so their output can be included in the final document.
+
+You no longer have to copy/paste plots into your homework!
+
+Documents built from Rmarkdown are fully reproducible, i.e. they are automatically regenerated whenever embedded `R` code changes.
+
+To include an `R` chunk in an Rmarkdown document, you use backticks.
+
+`r ''````{r}
+
+```
+
+In order to create a new Rmarkdown document in RStudio, File > New File > R markdown.
+
+There are many options that can affect the aesthetics of the resulting document and the results and appearance of R chunks. For a list of chunk options, see https://yihui.name/knitr/options/. Here are some useful ones:
+
+- `echo` - should the code be printed?
+- `message` and `warning` - should message and warnings be printed?
+- `eval` - should the code be evaluated?
+- `fig.height` & `fig.width` -  figure height and width
+- `fig.cap` - figure caption
+
+
+## Additional resources
+
+Documentation and cheat sheets (https://rmarkdown.rstudio.com)
+
+R Markdown: The Definitive Guide (https://bookdown.org/yihui/rmarkdown/)
+
