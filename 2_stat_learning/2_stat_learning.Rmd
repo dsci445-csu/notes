@@ -28,7 +28,7 @@ Credit: https://www.instagram.com/sandserifcomics/
 A scenario: We are consultants hired by a client to provide advice on how to improve sales of a product.
 
 ```{r, echo = FALSE}
-ads <- read_csv("data/Advertising.csv")
+ads <- read_csv("../data/Advertising.csv")
 ads %>% select(-1) %>% head(4) %>% kable()
 ```
 

@@ -1,0 +1,101 @@
+---
+title: "Chapter 3: Linear Regression"
+output:
+  pagedown::html_paged:
+    # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
+    css: ["../style/my-style-page.css", "default-fonts", "default-page", "default"]
+    self_contained: true
+    number_sections: true
+---
+
+```{r echo = FALSE, message = FALSE}
+library(tidyverse)
+library(scales)
+library(ISLR)
+library(knitr)
+
+opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
+theme_set(theme_bw())
+```
+
+*Linear regression* is a simple approach for supervised learning when the response is quantitative. Linear regression has a long history and we could actually spend most of this semester talking about it.
+
+Although linear regression is not the newest, shiniest thing out there, it is still a highly used technique out in the real world. It is also useful for talking about more modern techniques that are **generalizations** of it.
+
+We will review some key ideas underlying linear regression and discuss the least squares approach that is most commonly used to fit this model.
+
+Linear regression can help us to answer the following questions about our `Advertising` data:
+
+\newpage
+
+# Simple Linear Regression
+
+*Simple Linear Regression* is an approach for predictiong a quantitative response $Y$ on the basis of a single predictor variable $X$.
+
+It assumes:
+
+<br/><br/><br/><br/><br/><br/>
+
+Which leads to the following model:
+
+<br/><br/><br/><br/>
+
+For example, we may be interested in regressing `sales` onto `TV` by fitting the model
+
+<br/><br/><br/><br/>
+
+Once we have used training data to produce estimates $\hat{\beta}_0$ and $\hat{\beta}_1$, we can predict future sales on the basis of a particular TV advertising budget.
+
+<br/><br/><br/><br/>
+
+## Estimating the Coefficients
+
+In practice, $\beta_0$ and $\beta_1$ are **unknown**, so before we can predict $\hat{y}$, we must use our training data to estimate them.
+
+Let $(x_1, y_1), \dots, (x_n, y_n)$ represent $n$ observation pairs, each of which consists of a measurement of $X$ and $Y$.
+
+<br/><br/><br/>
+
+**Goal:** Obtain coefficient estimates $\hat{beta}_0$ and $\hat{\beta}_1$ such that the linear model fits the available data well.
+
+<br/><br/>
+
+The most common approach involves minimizing the *least squares* criterion.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+The least squares approach results in the following estimates:
+
+$$
+\hat{\beta}_1 = \\
+\hat{\beta}_0 = 
+$$
+
+We can get these estimates using the following commands in `R`:
+
+```{r}
+## load the data in
+ads <- read_csv("../data/Advertising.csv")
+
+## fit the model
+model <- lm(sales ~ TV, data = ads)
+
+summary(model)
+```
+
+```{r, echo=FALSE}
+ggplot(aes(TV, sales), data = ads) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+
+## Assessing the Accuracy of the Coefficient Estimates
+
+## Assessing the Accuracy of the Model
+
+# Multiple Linear Regression
+
+# Other Considerations
+
+# $K$-Nearest Neighbors
