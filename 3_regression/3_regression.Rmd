@@ -90,12 +90,146 @@ ggplot(aes(TV, sales), data = ads) +
 ```
 
 
-## Assessing the Accuracy of the Coefficient Estimates
+## Assessing Accuracy
 
-## Assessing the Accuracy of the Model
+Recall we assume the *true* relationship between $X$ and $Y$ takes the form
+
+<br/><br/>
+
+If $f$ is to be approximated by a linear function, we can write this relationship as
+
+<br/><br/>
+
+and when we fit the model to the training data, we get the following estimate of the *population model*
+
+<br/><br/>
+
+But how close this this to the truth?
+
+<br/><br/><br/><br/><br/>
+
+In general, $\sigma^2$ is not known, so we estimate it with the *residual standard error*, $RSE = \sqrt{RSS/(n - 2)}$.
+
+We can use these standard errors to compute confidence intervals and perform hypothesis tests.
+
+\newpage
+
+Once we have decided that there is a significant linear relationship between $X$ and $Y$ that is captured by our model, it is natural to ask
+
+> To what extent does the model fit the data?
+
+The quality of the fit is usually measured by the *residual standard error* and the $R^2$ statistic.
+
+**RSE**: Roughly speaking, the RSE is the average amount that the response will deviate from the true regression line. This is considered a measure of the *lack of fit* of the model to the data.
+
+$R^2$: The RSE provides an absolute measure of lack of fit, but is measured in the units of $Y$. So, we don't know what a "good" RSE value is! $R^2$ gives the proportion of variation in $Y$ explained by the model.
+
+```{r}
+summary(model)
+```
 
 # Multiple Linear Regression
 
+Simple linear regression is useful for predicting a response based on one predictor variable, but we often have **more than one** predictor.
+
+> How can we extend our approach to accommodate additional predictors?
+
+<br/><br/><br/><br/><br/>
+
+We can give each predictor a separate slope coefficient in a single model.
+
+<br/><br/><br/><br/>
+
+We interpret $\beta_j$ as the "average effect on $Y$ of a one unit increase in $X_j$, *holding all other predictors fixed*".
+
+In our `Advertising` example, 
+
+\newpage
+
+## Estimating the Coefficients
+
+As with the case of simple linear regression, the coefficients $\beta_0, \beta_1, \dots, \beta_p$ are unknown and must be estimated. Given estimates $\hat{\beta}_0, \hat{\beta}_1, \dots, \hat{\beta}_p$, we can make predictions using the formula
+
+<br/><br/>
+
+The parameters are again estimated using the same least squares approach that we saw in the context of simple linear regression.
+
+```{r}
+# model_2 <- lm(sales ~ TV + radio + newspaper, data = ads)
+model_2 <- lm(sales ~ ., data = ads[, -1])
+
+summary(model_2)
+```
+
+\newpage
+
+## Some Important Questions
+
+When we perform multiple linear regression we are usually interested in answering a few important questions:
+
+1. <br/><br/><br/>
+
+1. <br/><br/><br/>
+
+1. <br/><br/><br/>
+
+1. <br/><br/><br/>
+
+### Is there a relationship between response and predictors?
+
+We need to ask whether all of the regression coefficients are zero, which leads to the following hypothesis test.
+
+$$
+H_0: \qquad\\
+~\\
+H_a: \qquad
+$$
+
+This hypothesis test is performed by computing the $F$-statistic
+
+$$
+F = \qquad
+$$
+
+\newpage
+
+### Deciding on Important Variables
+
+After we have computed the $F$-statistic and concluded that there is a relationship between predictor and response, it is natural to wonder
+
+> Which predictors are related to the response?
+
+We could look at the $p$-values on the individual coefficients, but if we have many variables this can lead to false discoveries.
+
+Instead we could consider *variable selection*. We will revisit this in Ch. 6.
+
+### Model Fit
+
+Two of the most common measures of model fit are the RSE and $R^2$. These quantities are computed and interpreted in the same way as for simple linear regression.
+
+Be careful with using these alone, because $R^2$ will **always increase** as more variables are added to the model, even if it's just a small increase.
+
+```{r}
+# model with TV, radio, and newspaper
+summary(model_2)
+
+# model without newspaper
+summary(lm(sales ~ TV + radio, data = ads))
+```
+
+It may also be useful to plot residuals to get a sense of the model fit.
+
+```{r}
+ggplot() +
+  geom_point(aes(model_2$fitted.values, model_2$residuals))
+```
+
 # Other Considerations
+
+## Qualitative Predictors
+
+## Extentions of the Model
+
+## Potential Problems
 
 # $K$-Nearest Neighbors
