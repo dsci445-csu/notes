@@ -9,7 +9,7 @@ theme_set(theme_bw())
 
 ## ----------------------------------------------------------------------------------------------------
 ## load the data in
-ads <- read_csv("../data/Advertising.csv")
+ads <- read_csv("data/Advertising.csv")
 
 ## fit the model
 model <- lm(sales ~ TV, data = ads)
@@ -32,7 +32,6 @@ summary(model)
 model_2 <- lm(sales ~ ., data = ads[, -1])
 
 summary(model_2)
-
 
 ## ----------------------------------------------------------------------------------------------------
 # model with TV, radio, and newspaper
