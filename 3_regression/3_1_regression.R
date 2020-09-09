@@ -4,7 +4,6 @@ library(scales)
 library(ISLR)
 library(knitr)
 
-opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
 theme_set(theme_bw())
 
 

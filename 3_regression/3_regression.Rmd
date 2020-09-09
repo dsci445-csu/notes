@@ -226,10 +226,124 @@ ggplot() +
 
 # Other Considerations
 
-## Qualitative Predictors
 
-## Extentions of the Model
+
+## Categorical Predictors
+
+So far we have assumed all variables in our linear model are quantitiative.
+
+For example, consider building a model to predict highway gas mileage from the `mpg` data set.
+
+```{r}
+head(mpg)
+```
+
+```{r, message = FALSE, fig.height=9, cache=TRUE}
+library(GGally)
+
+mpg %>% 
+  select(-model) %>% # too many models
+  ggpairs() # plot matrix
+```
+
+To incorporate these categorical variables into the model, we will need to introduce $k - 1$ dummy variables, where $k =$ the number of levels in the variable, for each qualitative variable.
+
+For example, for `drv`, we have 3 levels: `4`, `f`, and `r`. 
+
+<br/><br/><br/><br/><br/><br/>
+
+```{r}
+lm(hwy ~ displ + cty + drv, data = mpg) %>%
+  summary()
+```
+
+\newpage
+
+## Extensions of the Model
+
+The standard regression model provides interpretable results and works well in many problems. However it makes some very strong assumptions that may not always be reasonable.
+
+<br/>
+
+**Additive Assumption**
+
+The additive assumption assumes that the effect of each predictor on the response is not affected by the value of the other predictors. What if we think the effect should depend on the value of another predictor?
+
+```{r}
+lm(sales ~ TV + radio + TV*radio, data = ads) %>%
+  summary()
+```
+
+
+\newpage
+
+**Linearity Assumption**
+
+The linear regression model assumes a linear relationship between response and predictors. In some cases, the true relationship may be non-linear.
+
+```{r}
+ggplot(data = mpg, aes(displ, hwy)) +
+  geom_point() +
+  geom_smooth(method = "lm", colour = "red") +
+  geom_smooth(method = "loess", colour = "blue")
+```
+
+\newpage
+
+```{r}
+lm(hwy ~ displ + I(displ^2), data = mpg) %>%
+  summary()
+```
 
 ## Potential Problems
 
+1. Non-linearity of response-predictor relationships <br/><br/><br/><br/>
+
+1. Correlation of error terms <br/><br/><br/><br/>
+
+1. Non-constant variance of error terms <br/><br/><br/><br/>
+
+1. Outliers 
+
+\newpage
+
 # $K$-Nearest Neighbors
+
+In Ch. 2 we discuss the differences between *parametric* and *nonparametric* methods. Linear regression is a parametric method because it assumes a linear functional form for $f(X)$.
+
+<br/>
+
+A simple and well-known non-parametric method for regression is called $K$-nearest neighbors regression (KNN regression).
+
+Given a value for $K$ and a prediction point $x_0$, KNN regression first identifies the $K$ training observations that are closest to $x_0$ ($\mathcal{N}_0$). It then estimates $f(x_0)$ using the average of all the training responses in $\mathcal{N}_0$,
+
+<br/>
+
+```{r, fig.show="hold", out.width = "33%", fig.height = 7}
+library(caret) # package for knn
+set.seed(445) #reproducibility
+
+x <- rnorm(100, 4, 1) # pick some x values
+y <- 0.5 + x + 2*x^2 + rnorm(100, 0, 2) # true relationship
+df <- data.frame(x = x, y = y) # data frame of training data
+
+for (k in seq(2, 10, by = 2)) {
+  knn_model <- knnreg(y ~ x, data = df, k = k) # fit knn model
+  
+  ggplot(df) +
+    geom_point(aes(x, y)) +
+    geom_line(aes(x, predict(knn_model, df)), colour = "red") +
+    ggtitle(paste("KNN, k = ", k)) +
+    theme(text = element_text(size = 30)) -> p
+  
+  print(p) # knn plots
+}
+
+ggplot(df) +
+    geom_point(aes(x, y)) +
+    geom_line(aes(x, lm(y ~ x, df)$fitted.values), colour = "red") +
+    ggtitle("Simple Linear Regression") +
+    theme(text = element_text(size = 30)) # slr plot
+
+```
+
