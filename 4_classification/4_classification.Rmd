@@ -1,0 +1,231 @@
+---
+title: "Chapter 4: Classification"
+output:
+  pagedown::html_paged:
+    # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
+    css: ["../style/my-style-page.css", "default-fonts", "default-page", "default"]
+    self_contained: true
+    number_sections: true
+---
+
+```{r echo = FALSE, message = FALSE}
+library(tidyverse)
+library(scales)
+library(ISLR)
+library(knitr)
+library(dplyr)
+library(tidyr)
+
+opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
+theme_set(theme_bw())
+```
+
+The linear model in Ch. 3 assumes the response variable $Y$ is quantitiative. But in many situations, the response is categorical.
+
+<br/><br/><br/><br/>
+
+In this chapter we will look at approaches for predicting categorical responses, a process known as *classification*.
+
+Classification problems occur often, perhaps even more so than regression problems. Some examples include
+
+1. <br/><br/><br/><br/>
+
+2. <br/><br/><br/><br/>
+
+3. <br/><br/><br/><br/>
+
+As with regression, in the classification setting we have a set of training observations $(x_1, y_1), \dots, (x_n, y_n)$ that we can use to build a classifier. We want our classifier to perform well on the training data and also on data not used to fit the model (**test data**).
+
+<br/>
+
+We will use the `Default` data set in the `ISLR` package for illustrative purposes. We are interested in predicting whether a person will default on their credit card payment on the basis of annual income and credit card balance.
+
+\newpage
+
+```{r, echo = FALSE}
+head(Default)
+
+ggplot(Default) +
+  geom_point(aes(balance, income, colour = default, shape = default), alpha = 0.5)
+
+Default %>%
+  select (-student) %>%
+  gather(feature, value, -default) %>%
+  ggplot() +
+  geom_boxplot(aes(default, value, fill = default)) +
+  facet_wrap(.~feature, scales = "free_y") +
+  theme(legend.position = "hide")
+
+```
+
+# Why not Linear Regression?
+
+I have said that linear regression is not appropriate in the case of a categorical response. Why not?
+
+Let's try it anyways. We could consider encoding the values of `default` in a quantitative repsonse variable $Y$
+
+$$
+Y = \begin{cases}
+1 & \text{if } \texttt{default} \\
+0 & \text{otherwise}
+\end{cases}
+$$
+Using this coding, we could then fit a linear regression model to predict $Y$ on the basis of `income` and `balance`. This implies an ordering on the outcome, not defaulting comes first before defaulting and insists the difference between these two outcomes is $1$ unit. In practice, there is no reason for this to be true.
+
+<br/>
+<br/>
+<br/>
+
+Using the dummy encoding, we can get a rough estimate of $P(\texttt{default} | X)$, but it is not guaranteed to be scaled correctly.
+
+# Logistic Regression
+
+Let's consider again the `default` variable which takes values `Yes` or `No`. Rather than modeling the response directly, logistic regression models the *probability* that $Y$ belongs to a particular category.
+
+<br/><br/><br/><br/>
+
+For any given value of `balance`, a prediction can be made for `default`.
+
+<br/><br/><br/><br/>
+
+## The Model
+
+How should we model the relationship between $p(X) = P(Y = 1 | X)$ and $X$? We could use a linear regression model to represent those probabilities
+
+<br/><br/><br/><br/>
+
+```{r, echo = FALSE, fig.height = 2.5}
+Default2 <- Default
+Default2$default_num <- as.numeric(Default2$default) - 1
+
+m0 <- lm(default_num ~ balance, data = Default2)
+
+ggplot(Default2) +
+  geom_point(aes(balance, default_num), alpha = 0.5) +
+  geom_abline(aes(intercept = m0$coefficients[1], slope = m0$coefficients[2]), colour = "blue") +
+  xlab("Balance") +
+  ylab("Probability of Default")
+```
+
+\newpage
+
+To avoid this, we must model $p(X)$ using a function that gives outputs between $0$ and $1$ for all values of $X$. Many functions meet this description, but in *logistic* regression, we use the *logistic* function,
+
+<br/><br/><br/><br/>
+
+```{r, echo = FALSE}
+m1 <- glm(default ~ balance, family = "binomial", data = Default)
+
+ggplot(Default2) +
+  geom_point(aes(balance, default_num), alpha = 0.5) +
+  geom_line(aes(balance, m1$fitted.values), colour = "blue") +
+  xlab("Balance") +
+  ylab("Probability of Default")
+```
+
+<br/><br/>
+
+After a bit of manipulation,
+
+\newpage
+
+By taking the logarithm of both sides we see,
+
+<br/><br/><br/><br/><br/><br/>
+
+Recall from Ch. 3 that $\beta_1$ gives the "average change in $Y$ associated with a one unit increase in $X$." In contrast, in a logistic model,
+
+<br/><br/><br/><br/>
+
+However, because the relationship between $p(X)$ and $X$ is not linear, $\beta_1$ does **not** correspond to the change in $p(X)$ associated with a one unit increase in $X$. The amount that $p(X)$ changes due to a 1 unit increase in $X$ depends on the current value of $X$.
+
+\newpage
+
+## Estimating the Coefficients
+
+The coefficients $\beta_0$ and $\beta_1$ are unknown and must be estimated based on the available training data. To find estimates, we will use the method of *maximum likelihood*.
+
+The basic intuition is that we seek estimates for $\beta_0$ and $\beta_1$ such that the predicted probability $\hat{p}(x_i)$ of default for each individual corresponds as closely as possible to the individual's observed default status.
+
+<br/><br/><br/><br/>
+
+```{r}
+m1 <- glm(default ~ balance, family = "binomial", data = Default)
+
+summary(m1)
+```
+
+## Predictions
+
+Once the coefficients have been estimated, it is a simple matter to compute the probability of `default` for any given credit card balance. For example, we predict that the default probability for an individual with `balance` of $1,000 is
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+In contrast, the predicted probability of default for an individual with a balance of $2,000 is
+
+\newpage
+
+## Multiple Logistic Regression
+
+We now consider the problem of predicting a binary response using multiple predictors. By analogy with the extension from simple to multiple linear regression, 
+
+<br/><br/><br/><br/><br/><br/>
+
+Just as before, we can use maximum likelihood to estimate $\beta_0, \beta_1, \dots, \beta_p$.
+
+```{r}
+m2 <- glm(default ~ ., family = "binomial", data = Default)
+summary(m2)
+```
+
+
+\newpage
+
+By substituting estimates for the regression coefficients from the model summary, we can make predictions. For example, a student with a credit card balance of $1,500 and an income of $40,000 has an estimated probability of default of 
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+A non-student with the same balance and income has an estimated probability of default of
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+## Logistic Regression for $> 2$ Classes
+
+We sometimes which to classify a response variable that has more than two classes. There are multi-class extensions to logistic regression ("multinomial regression"), but there are far more popular methods of performing this. 
+
+# LDA
+
+Logistic regression involves direction modeling $P(Y = k | X = x)$ using the logistic function for the case of two response classes. We now consider a less direct approach.
+
+**Idea:**
+
+<br/><br/><br/><br/><br/><br/>
+
+Why do we need another method when we have logistic regression?
+
+<br/><br/>
+
+1. <br/><br/><br/><br/><br/>
+
+1. <br/><br/><br/><br/><br/>
+
+1. <br/><br/><br/><br/><br/>
+
+\newpage
+
+## Bayes' Theorem for Classification
+
+
+
+## p = 1
+
+## p > 1
+
+
+
+
+
+# KNN
+
+# Comparison
+
