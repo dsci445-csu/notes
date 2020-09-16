@@ -18,6 +18,8 @@ library(tidyr)
 
 opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
 theme_set(theme_bw())
+
+set.seed(445)
 ```
 
 The linear model in Ch. 3 assumes the response variable $Y$ is quantitiative. But in many situations, the response is categorical.
@@ -215,13 +217,134 @@ Why do we need another method when we have logistic regression?
 
 ## Bayes' Theorem for Classification
 
+Suppose we wish to classify an observation into one of $K$ classes, where $K \ge 2$. 
+
+<br/>
+
+$\pi_k$
+
+<br/><br/><br/><br/>
+
+$f_k(x)$
+
+<br/><br/><br/><br/>
+
+$P(Y = k | X = x)$
+
+<br/><br/><br/><br/>
+
+In general, estimating $\pi_k$ is easy if we have a random sample of $Y$'s from the population.
+
+<br/><br/><br/><br/>
+
+Estimating $f_k(x)$ is more difficult unless we assume some particular forms.
+
+\newpage
+
 
 
 ## p = 1
 
+Let's (for now) assume we only have $1$ predictor. We would like to obtain an estimate for $f_k(x)$ that we can plug into our formula to estimate $p_k(x)$. We will then classify an observation to the class for which $\hat{p}_k(x)$ is greatest.
+
+Suppose we assume that $f_k(x)$ is normal. In the one-dimensional setting, the normal density takes the form
+
+<br/><br/><br/><br/><br/><br/>
+
+Plugging this into our formula to estimate $p_k(x)$,
+
+<br/><br/><br/><br/><br/><br/>
+
+We then assign an observation $X = x$ to the class which makes $p_k(x)$ tthe largest. This is equivalent to
+
+<br/><br/><br/><br/><br/><br/>
+
+```{example}
+Let $K = 2$ and $\pi_1 = \pi_2$. When does the Bayes classifier assign an observation to class $1$?
+```
+
+\newpage
+
+```{r, echo = FALSE}
+x <- seq(-6, 6, length.out = 1000)
+ggplot() +
+  geom_line(aes(x, dnorm(x, 1.25, 1)), colour = "red") +
+  geom_line(aes(x, dnorm(x, -1.25, 1)), colour = "blue") +
+  geom_vline(aes(xintercept = 0), lty = 2) +
+  xlab("") + ylab("")
+```
+
+<br/><br/><br/><br/>
+
+In practice, even if we are certain of our assumption that $X$ is drawn from a Gaussian distribution within each class, we still have to estimate the parameters $\mu_1, \dots, \mu_K, \pi_1, \dots, \pi_K, \sigma^2$.
+
+The *linear discriminant analysis* (LDA) method approximated the Bayes classifier by plugging estimates in for $\pi_k, \mu_k, \sigma^2$.
+
+<br/><br/><br/><br/><br/><br/><br/>
+
+Sometimes we have knowledge of class membership probabilities $\pi_1, \dots, \pi_K$ that can be used directly. If we do not, LDA estimates $\pi_k$ using the proportion of training observations that belong to the $k$th class.
+
+<br/>
+
+The LDA classifier assignes an observation $X = x$ to the class with the highest value of
+
+\newpage
+
+```{r, echo = FALSE}
+df <- data.frame(x = rnorm(20, 1.25, 1), y = "1") %>%
+  bind_rows(data.frame(x = rnorm(20, -1.25, 1), y = "2"))
+
+df %>%
+  group_by(y) %>%
+  summarise(mu = mean(x), pi = n()/nrow(df)) %>%
+  data.frame() -> ests
+
+ests$sigma2 <- df %>%
+  left_join(ests) %>%
+  mutate(summand = (x - mu)^2) %>%
+  group_by(y) %>%
+  summarise(summand = sum(summand)) %>%
+  summarise(sigma2 = sum(summand)/(nrow(df) - nrow(ests))) %>% .$sigma2
+
+
+ggplot() +
+  geom_histogram(aes(x, group = y, fill = y), data = df, bins = 30, position = "dodge") +
+  geom_vline(aes(xintercept = 0), lty = 2) +
+  geom_vline(aes(xintercept = sum(ests$mu)/2))
+
+```
+
+<br/><br/>
+
+```{r, echo = FALSE}
+## test data
+test_df <- data.frame(x = rnorm(20000, 1.25, 1), y = "1") %>%
+  bind_rows(data.frame(x = rnorm(20000, -1.25, 1), y = "2"))
+
+test_df %>%
+  mutate(pred = as.numeric(x <= sum(ests$mu)/2) + 1) %>%
+  select(y, pred) %>%
+  table() -> confusion
+
+test_df %>%
+  mutate(pred = as.numeric(x <= 0) + 1) %>%
+  select(y, pred) %>%
+  table() -> confusion_bayes
+
+confusion
+```
+
+The LDA test error rate is approximately `r percent((confusion[2, 1] + confusion[1, 2])/sum(confusion), accuracy = .01)` while the Bayes classifier error rate is approximately `r percent((confusion_bayes[2, 1] + confusion_bayes[1, 2])/sum(confusion_bayes), accuracy = .01)`.
+
+<br/><br/><br/><br/><br/>
+
+The LDA classifier results from assuming that the observations within each class come from a normal distribution with a class-specific mean vector and a common variance $\sigma^2$ and plugging estimates for these parameters into the Bayes classifier.
+
+\newpage
+
 ## p > 1
 
-
+## QDA
 
 
 
