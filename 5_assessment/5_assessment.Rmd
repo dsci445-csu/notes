@@ -1,0 +1,160 @@
+---
+title: "Chapter 5: Assessing Model Accuracy"
+output:
+  pagedown::html_paged:
+    # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
+    css: ["../style/my-style-page.css", "default-fonts", "default-page", "default"]
+    self_contained: true
+    number_sections: true
+---
+
+```{r echo = FALSE, message = FALSE}
+library(tidyverse)
+library(scales)
+library(ISLR)
+library(knitr)
+library(dplyr)
+library(tidyr)
+
+opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
+theme_set(theme_bw())
+
+set.seed(445)
+```
+
+One of the key aims of this course is to introduce you to a wide range of statistical learning techniques. Why so many? Why not just the "best one"?
+
+<br/><br/><br/><br/>
+
+Hence, it's important to decide for any given set of data which method produces the best results.
+
+<br/><br/>
+
+![](https://imgs.xkcd.com/comics/machine_learning.png)
+
+https://xkcd.com/1838/
+
+
+# Measuring Quality of Fit
+
+With linear regression we talked about some ways to measure fit of the model
+
+<br/><br/><br/><br/><br/><br/>
+
+In general, we need a way to measure fit and compare *across models*. 
+
+<br/>
+
+One way could be to measure how well its predictions match the observed data. In a regression session, the most commonly used measure is the *mean-squared error (MSE)*
+
+<br/><br/><br/><br/><br/><br/>
+
+We don't really care how well our methods work on the training data. 
+
+<br/>
+
+Instead, we are interested in the accuracy of the predictions that we obtain when we apply our method to previously unseen data. Why?
+
+\newpage
+
+So how do we select a method that minimizes the test MSE?
+
+<br/><br/>
+
+But what if we don't have a test set available?
+
+<br/><br/><br/><br/>
+
+```{r, echo = FALSE}
+## generate training data
+n <- 50
+x <- runif(n, 0, 100)
+f <- function(x) 20 + .0001*(-1*(x - 20) - 2*(x - 70)^2 - (x - 50)^3)
+train <- data.frame(x = x, y = f(x) + rnorm(n, 0, 2))
+
+## fit models of varying levels of flexibility
+m0 <- lm(y ~ x, data = train)
+m1 <- smooth.spline(train$x, train$y, df = 6)
+m2 <- smooth.spline(train$x, train$y, df = 25)
+
+## get training MSE
+data.frame(model = "Linear Regression", df = 2, pred = m0$fitted.values, true = train$y) %>%
+  bind_rows(data.frame(model = "Smoothing Spline", df = 6, pred = predict(m1, x)$y, true = train$y)) %>%
+  bind_rows(data.frame(model = "Smoothing Spline", df = 25, pred = predict(m2, x)$y, true = train$y)) %>%
+  mutate(SE = (pred - true)^2) %>%
+  group_by(model, df) %>%
+  summarise(`Train MSE` = mean(SE)) -> mse
+
+## plot predictions vs. training data
+ggplot() + 
+  geom_point(aes(x, y), data = train) +
+  geom_line(aes(x, f(x)), colour = "black") +
+  geom_abline(aes(intercept = m0$coefficients[1], slope = m0$coefficients[2]), colour = "blue") +
+  geom_line(aes(m1$x, m1$y), colour = "red") +
+  geom_line(aes(m2$x, m2$y), colour = "darkgreen")
+
+## generate test data
+test <- data.frame(x = runif(1000, 0, 100))
+test$y <- f(x) + rnorm(n, 0, 2)
+
+## predictions for test data
+m0.pred <- predict(m0, test)
+m1.pred <- predict(m1, test$x)
+m2.pred <- predict(m2, test$x)
+
+## get test MSE
+data.frame(model = "Linear Regression", df = 2, pred = m0.pred, true = test$y) %>%
+  bind_rows(data.frame(model = "Smoothing Spline", df = 6, pred = m1.pred$y, true = test$y)) %>%
+  bind_rows(data.frame(model = "Smoothing Spline", df = 25, pred = m2.pred$y, true = test$y)) %>%
+  mutate(SE = (pred - true)^2) %>%
+  group_by(model, df) %>%
+  summarise(`Test MSE` = mean(SE)) %>%
+  left_join(mse) %>%
+  knitr::kable(digits = 4) ## pretty table
+```
+
+\newpage
+
+## Classification Setting
+
+So far, we have talked about assessing model accuracy in the regression setting, but we also need a way to assess the accuracy of classification models.
+
+Suppose we see to estimate $f$ on the basis of training observations where now the response is categorical. The most common approach for quantifying the accuracy is the training error rate.
+
+<br/><br/><br/><br/><br/><br/>
+
+This is called the *training error rate* because it is based on the data that was used to train the classifier. 
+
+<br/>
+
+As with the regression setting, we are mode interested in error rates for data *not* in our training data.
+
+\newpage
+
+## Bias-Variance Trade-off
+
+The U-shape in the test MSE curve compared with flexibility is the result of two competing properties of statistical learning methods. It is possible to show that the expected test MSE, for a given test value $x_0$, can be decomposed
+
+<br/><br/><br/><br/><br/><br/><br/><br/>
+
+This tells us in order to minimize the expected test error, we need to select a statistical learning method that siulatenously achieves *low variance* and *low bias*.
+
+<br/>
+
+Variance -- <br/><br/><br/><br/>
+
+Bias -- <br/><br/><br/><br/>
+
+\newpage
+
+# Cross-Validation
+
+## Validation Set
+
+## Leave-One-Out Cross Validation
+
+## $k$-Fold Cross Validation
+
+## Bias-Variance Trade-off for $k$-Fold Cross Validation
+
+## Cross-Validation for Classification Problems
