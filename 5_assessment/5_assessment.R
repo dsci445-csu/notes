@@ -6,6 +6,7 @@ library(knitr)
 library(dplyr)
 library(tidyr)
 
+theme_set(theme_bw())
 
 set.seed(445)
 
@@ -265,4 +266,97 @@ res_cv %>%
   ggplot() +
   geom_line(aes(terms, kfoldCV_test_MSE, group = iter, colour = iter)) +
   theme(legend.position = "none")
+
+
+## ---- echo = FALSE-------------------------------------------------------------------------------------
+library(class)
+library(mvtnorm)
+
+
+## ---- echo = FALSE, cache = TRUE, fig.show='hold', out.width="50%", fig.height=5-----------------------
+mu_1 <- c(-1, 1)
+mu_2 <- c(2, -1)
+mu_3 <- c(-3, .1)
+mu_4 <- c(1, -1)
+sigma_1 <- matrix(c(1, .5, .5, 1), nrow = 2)
+sigma_2 <- matrix(c(1, -.5, -.5, 1), nrow = 2)
+
+sample_mixture2 <- function(n, mu_1, mu_2, sigma, p) {
+  z <- rbinom(n, 1, p)
+  z*rmvnorm(n, mu_1, sigma) + (1 - z)*rmvnorm(n, mu_2, sigma) 
+}
+
+d_mixture2 <- function(x, mu_1, mu_2, sigma, p) {
+  p*dmvnorm(x, mu_1, sigma) + (1 - p)*dmvnorm(x, mu_2, sigma) 
+}
+
+# training data from the mixture
+train <- data.frame(class = "1", sample_mixture2(100, mu_1, mu_2, sigma_1, 0.2)) %>%
+  bind_rows(data.frame(class = "2", sample_mixture2(100, mu_3, mu_4, sigma_1, 0.7)))
+
+names(train) <- c("class", "x1", "x2")
+
+bayes_classifier <- function(x) {
+  as.character(as.numeric(d_mixture2(x, mu_1, mu_2, sigma_1, 0.2)*0.5 < d_mixture2(x, mu_3, mu_3, sigma_1, 0.7)*0.5) + 1)
+}
+
+## create plot data to separate the space
+expand.grid(x1 = seq(-6, 6, length.out = 100), 
+            x2 = seq(-6, 6, length.out = 100)) %>%
+  data.frame() -> plot_dat
+
+## knn plots for each k
+for(k in c(1, 10, 100)) {
+  ## fit knn
+  knn_fit <- knn(train[, -1], plot_dat, train$class, k = k)
+  
+  knn_plot_dat <- plot_dat %>%
+    mutate(class = as.character(knn_fit))
+  
+  ## make plots
+  knn_plot_dat %>%
+    ggplot() +
+    geom_tile(aes(x1, x2, fill = class), alpha = 0.5) +
+    geom_point(aes(x1, x2, colour = class), data = train) +
+    ggtitle(paste("KNN, K =", k)) +
+    theme(text = element_text(size = 20), legend.position = 'hide') -> p
+  
+  print(p)
+}
+
+plot_dat %>%
+  mutate(class = apply(plot_dat, 1, bayes_classifier)) %>%
+  ggplot() +
+  geom_tile(aes(x1, x2, fill = class), alpha = 0.5) +
+  geom_point(aes(x1, x2, colour = class), data = train) +
+  ggtitle("Bayes Classifier") +
+  theme(text = element_text(size = 20))
+
+
+## ------------------------------------------------------------------------------------------------------
+k_fold <- 10
+cv_label <- sample(seq_len(k_fold), nrow(train), replace = TRUE)
+err <- rep(NA, k) # store errors for each flexibility level
+
+for(k in seq(1, 100, by = 2)) {
+  err_cv <- rep(NA, k_fold) # store error rates for each fold
+  for(ell in seq_len(k_fold)) {
+    trn_vec <- cv_label != ell # fit model on these
+    tst_vec <- cv_label == ell # estimate error on these
+    
+    ## fit knn
+    knn_fit <- knn(train[trn_vec, -1], train[tst_vec, -1], train[trn_vec, ]$class, k = k)
+    ## error rate
+    err_cv[ell] <- mean(knn_fit != train[tst_vec, ]$class)
+  }
+  err[k] <- mean(err_cv)
+}
+err <- na.omit(err)
+
+
+## ---- echo = FALSE-------------------------------------------------------------------------------------
+ggplot() +
+  geom_line(aes(seq(1, 100, by = 2), err)) +
+  geom_point(aes(seq(1, 100, by = 2)[which.min(err)], err[which.min(err)]), shape = 3) +
+  xlab("KNN K") + ylab("K-Fold CV Error")
 
