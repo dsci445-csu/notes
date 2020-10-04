@@ -1,0 +1,158 @@
+---
+title: "Chapter 6: Linear Model Selection & Regularization"
+output:
+  pagedown::html_paged:
+    # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
+    css: ["../style/my-style-page.css", "default-fonts", "default-page", "default"]
+    self_contained: true
+    number_sections: true
+---
+
+```{r echo = FALSE, message = FALSE}
+library(tidyverse)
+library(scales)
+library(ISLR)
+library(knitr)
+library(dplyr)
+library(tidyr)
+
+opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
+theme_set(theme_bw())
+
+set.seed(445)
+```
+
+In the regression setting, the standard linear model is commonly used to describe the relationship between a response $Y$ and a set of variables $X_1, \dots, X_p$.
+
+<br/><br/><br/><br/><br/><br/>
+
+The linear model has distinct advantages in terms of inference and is often surprisingly competitive for prediction. How can it be improved?
+
+<br/><br/><br/>
+
+We can yield both better *prediction accuracy* and *model interpretability*:
+
+# Subset Selection
+
+We consider methods for selecting subsets of predictors.
+
+## Best Subset
+
+To perform *best subset selection*, we fit a separate least squares regression for each possible combination of the $p$ predictors.
+
+Algorithm:
+
+<br/><br/><br/><br/><br/><br/><br/><br/>
+
+We can perform something similar with logistic regression.
+
+## Stepwise Selection
+
+For computational reasons, best subset selection cannot be performed for very large $p$.
+
+<br/><br/><br/>
+
+Stepwise selection is a computationally efficient procedure that considers a much smaller subset of models.
+
+Forward Stepwise Selection:
+
+<br/><br/><br/><br/><br/><br/><br/><br/>
+
+Backward Stepwise Selection:
+
+<br/><br/><br/><br/><br/><br/><br/><br/>
+
+Neither forward nor backwards stepwise selection are guaranteed to find the best model containing a subset of the $p$ predictors.
+
+## Choosing the Optimal Model
+
+<br/><br/>
+
+$C_p$ <br/><br/><br/><br/><br/><br/>
+
+AIC & BIC <br/><br/><br/><br/><br/><br/>
+
+Adjusted $R^2$ <br/><br/><br/><br/><br/><br/>
+
+Validation and Cross-Validation
+
+\newpage
+
+# Shrinkage Methods
+
+The subset selection methods involve using least squares to fit a linear model that contains a subset of the predictors. As an alternative, we can fit a model with all $p$ predictors using a technique that constrains (*regularizes*) the estimates.
+
+<br/><br/><br/><br/>
+
+Shrinking the coefficient estimates can significantly reduce their variance!
+
+## Ridge Regression
+
+Recall that the least squares fitting procedure estimates $\beta_1, \dots, \beta_p$ using values that minimize
+
+<br/><br/><br/><br/><br/><br/>
+
+*Ridge Regression* is similar to least squares, except that the coefficients are estimated by minimizing
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+The tuning parameter $\lambda$ serves to control the impact on the regression parameters.
+
+\newpage
+
+The standard least squares coefficient estimates are scale invariant.
+
+<br/><br/><br/>
+
+In contrast, the ridge regression coefficients $\hat{\beta}^R_\lambda$ can change substantially when multiplying a given predictor by a constant.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/>
+Therefore, it is best to apply ridge regression *after standardizing the predictors* so that they are on the same scale:
+
+\newpage
+
+Why does ridge regression work?
+
+\newpage
+
+## The Lasso
+
+Ridge regression does have one obvious disadvantage.
+
+<br/><br/><br/><br/><br/><br/>
+
+This may not be a problem for prediction accuracy, but it could be a challenge for model interpretation when $p$ is very large.
+
+<br/>
+
+The *lasso* is an alternative that overcomes this disadvantage. The lasso coefficients $\hat{\beta}_\lambda^L$ minimize
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+As with ridge regression, the lasso shrinks the coefficient estimates towards zero.
+
+<br/><br/><br/><br/><br/><br/>
+
+As a result, lasso models are generally easier to interpret.
+
+\newpage
+
+Why does the lasso result in estimates that are exactly equal to zero but ridge regression does not? One can show that the lasso and ridge regression coefficient estimates solve the following problems
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+In other words, when we perform the lasso we are trying to find the set of coefficient estimates that lead to the smalled RSS, subject to the contraint that there is a budget $s$ for how large $\sum_{j = 1}^p |\beta_j|$ can be.
+
+\newpage
+
+## Tuning
+
+We still need a mechanism by which we can determine which of the models under consideration is "best". 
+
+<br/>
+
+For both the lasso and ridge regression, we need to select $\lambda$ (or the budget $s$).
+
+How?
+
+# Dimension Reduction Methods
