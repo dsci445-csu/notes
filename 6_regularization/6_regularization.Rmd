@@ -156,3 +156,205 @@ For both the lasso and ridge regression, we need to select $\lambda$ (or the bud
 How?
 
 # Dimension Reduction Methods
+
+So far we have controlled variance in two ways:
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+We now explore a class of approaches that 
+
+<br/><br/><br/><br/><br/><br/>
+
+We refer to these techniques as *dimension reduction* methods.
+
+\newpage
+
+The term *dimension reduction* comes from the fact that this approach reduces the problem of estimating $p + 1$ coefficients to the problem of estimating $M + 1$ coefficients where $M < p$.
+
+<br/><br/><br/><br/><br/><br/>
+
+Dimension reduction serves to constrain $\beta_j$, since now they must take a particular form.
+
+<br/><br/><br/><br/><br/><br/>
+
+All dimension reduction methods work in two steps.
+
+\newpage
+
+## Principle Component Regression
+
+*Principal Components Analysis (PCA)* is a popular approach for deriving a low-dimensional set of features from a large set of variables.
+
+<br/>
+
+The *first principal component* directions of the data is that along which the obervations vary the most.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+We can construct up to $p$ principal components, where the $2$nd principal component is a linear combination of the variables that are uncorrelated to the first principal component and has the largest variance subject to this constraint.
+
+<br/><br/>
+
+```{r, echo = FALSE, fig.show = "hold", out.width="50%", fig.height = 4.5}
+pca.fit <- prcomp(Auto[, c("weight", "horsepower")]) ## pca
+lm.fit <- lm(horsepower ~ weight, data = Auto) ## for plot
+
+ggplot() +
+  geom_point(aes(weight, horsepower), data = Auto) +
+  geom_abline(aes(intercept = coef(lm.fit)[1], slope = coef(lm.fit)[2]), colour = "blue") +
+  theme(text = element_text(size = 20))
+  
+
+## PC Plot
+data.frame(pca.fit$x) %>%
+  ggplot() +
+  geom_point(aes(PC1, -PC2)) +
+  geom_hline(aes(yintercept = 0), colour = "blue") +
+  ylab("PC2") +
+  theme(text = element_text(size = 20))
+```
+
+\newpage
+
+The Principal Components Regression approach (PCR) involves
+
+<br/>
+
+1. <br/><br/>
+
+2. <br/><br/>
+
+<br/>
+
+Key idea:
+
+<br/><br/>
+
+In other words, we assume that the directions in which $X_1, \dots, X_p$ show the most variation are the directions that are associated with $Y$.
+
+<br/><br/><br/><br/><br/><br/>
+
+How to choose $M$, the number of components?
+
+<br/><br/><br/><br/><br/><br/>
+
+Note: PCR is not feature selection!
+
+\newpage
+
+## Partial Least Squares
+
+The PCR approach involved identifying linear combinations that best represent the predictors $X_1, \dots, X_p$.
+
+<br/>
+
+Consequently, PCR suffers from a drawback
+
+<br/>
+
+Alternatively, *partial least squares (PLS)* is a supervised version.
+
+<br/><br/><br/><br/><br/>
+
+Roughly speaking, the PLS approach attempts to find directions that help explain both the reponse and the predictors.
+
+
+The first PLS direction is computed,
+
+<br/><br/><br/><br/><br/><br/>
+
+To identify the second PLS direction,
+
+<br/><br/><br/><br/><br/><br/>
+
+As with PCR, the number of partial least squares directions is chosen as a tuning parameter.
+
+# Considerations in High Dimensions
+
+Most traditional statistical techniques for regression and classification are intendend for the low-dimensional setting.
+
+<br/><br/><br/><br/><br/><br/>
+
+In the past 25 years, new technologies have changed the way that data are collected in many fields. It is not commonplace to collect an almost unlimited number of feature measurements.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+Data sets containing more features than observations are often referred to as *high-dimensional*.
+
+\newpage
+
+What can go wrong in high dimensions?
+
+<br/><br/><br/><br/>
+
+```{r, echo = FALSE, fig.show='hold', out.width="50%", fig.height=4}
+plot_fit <- function(n) {
+  x <- rnorm(n)
+  y <- 1 + 2*x + rnorm(n, 0, .5)
+  
+  lm_fit <- lm(y ~ x)
+  lm_coefs <- coef(lm_fit)
+  
+  ggplot() +
+    geom_point(aes(x, y), colour = "red", size = 2) +
+    geom_abline(aes(intercept = lm_coefs[1], slope = lm_coefs[2]), colour = "blue") +
+    theme(text = element_text(size = 30))
+}
+
+plot_fit(20)
+plot_fit(2)
+
+```
+
+<br/><br/><br/><br/>
+
+```{r, echo = FALSE, fig.show='hold', fig.height=4}
+add_random_predictors <- function(p) {
+  n <- 20
+  
+  x <- matrix(rnorm(n * p), nrow = n, ncol = p)
+  y <- rnorm(n)
+  
+  lm_fit <- lm(y ~ x)
+  
+  test_x <- matrix(rnorm(n * p), nrow = n, ncol = p)
+  test_y <- rnorm(n)
+  
+  pred_y <- predict(lm_fit, newdata = data.frame(test_x))
+
+  return(data.frame(p = p, 
+                    R_squared = summary(lm_fit)$r.squared, 
+                    test_MSE = mean((test_y - pred_y)^2),
+                    train_MSE = mean(lm_fit$residuals^2)))
+  
+}
+
+res <- data.frame()
+for(p in seq(1, 20)) {
+  res <- rbind(res, add_random_predictors(p))
+}
+
+res %>%
+  gather(metric, value, -p) %>%
+  ggplot() +
+  geom_line(aes(p, value)) +
+  facet_wrap(.~ metric, nrow = 1, scales = "free_y")
+
+```
+
+\newpage
+
+Many of the methds that we've seen for fitting *less flexible* models work well in the high-dimension setting.
+
+<br/>
+
+1. <br/><br/><br/>
+
+2. <br/><br/><br/>
+
+3. <br/><br/><br/>
+
+<br/><br/><br/>
+
+When we perform the lasso, ridge regression, or other regression procedures in the high-dimensional setting, we must be careful how we report our results.
+
