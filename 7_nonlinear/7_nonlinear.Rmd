@@ -1,0 +1,247 @@
+---
+title: "Chapter 7: Moving Beyond Linarity"
+output:
+  pagedown::html_paged:
+    # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
+    css: ["../style/my-style-page.css", "default-fonts", "default-page", "default"]
+    self_contained: true
+    number_sections: true
+---
+
+```{r echo = FALSE, message = FALSE}
+library(tidyverse)
+library(scales)
+library(ISLR)
+library(knitr)
+library(dplyr)
+library(tidyr)
+library(splines)
+
+opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
+theme_set(theme_bw())
+
+set.seed(445)
+```
+
+So far we have mainly focused on linear models.
+
+<br/><br/><br/><br/><br/><br/>
+
+Previously, we have seen we can improve upon least squares using ride regression, the lasso, principal components regression, and more.
+
+<br/>
+
+Through simple and more sophisticated extensions of the linear model, we can relax the linearity assumption while still maintiaining as much interpretability as possible.
+
+
+# Step Functions
+
+Using polynomial functions of the features as predictors imposes a *global* structure on the non-linear function of $X$.
+
+<br/>
+
+We can instead use *step-functions* to avoid imposing a global structure.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+For a given value of $X$, at most one of $C_1, \dots, C_K$ can be non-zero.
+
+\newpage
+
+Example: Wage data.
+
+```{r, echo = FALSE}
+head(Wage, 4) %>% knitr::kable(row.names = FALSE)
+```
+<br/><br/><br/>
+```{r, echo = FALSE, fig.show='hold', out.width='50%', fig.height=6}
+df <- Wage[, c("age", "wage")] %>%
+  mutate(c1 = as.numeric(age >= 30 & age < 60),
+         c2 = as.numeric(age >= 60)) %>%
+  select(-age)
+
+m0 <- lm(wage ~ ., data = df)
+interval <- predict(m0, newdata = df, interval = 'confidence') %>% data.frame()
+
+ggplot() +
+  geom_point(aes(age, wage), alpha = .3, data = Wage) +
+  geom_ribbon(aes(x = Wage$age, ymin = interval$lwr, ymax = interval$upr), fill = "red", alpha = .2) +
+  geom_line(aes(Wage$age, m0$fitted.values), colour = "red", size = 2) +
+  theme(text = element_text(size = 30))
+  
+df2 <- Wage[, c("age", "wage")] %>%
+  mutate(c1 = as.numeric(age >= 30 & age < 60),
+         c3 = as.numeric(age >= 60),
+         high_wage = wage > 250) %>%
+  select(-age, -wage)
+
+m1 <- glm(high_wage ~ ., family = "binomial", data = df2)
+interval <- predict(m1, newdata = df2, type = "response", se.fit = TRUE) %>% data.frame()
+
+ggplot() +
+  geom_ribbon(aes(x = Wage$age, ymin = interval$fit - 1.96*interval$se.fit, ymax = interval$fit + 1.96*interval$se.fit), fill = "red", alpha = .2) +
+  geom_line(aes(Wage$age, m1$fitted.values), colour = "red", size = 2) +
+  xlab("age") +
+  ylab("Pr(wage > 250 | age)") +
+  theme(text = element_text(size = 30))
+
+  
+```
+
+\newpage
+
+# Basis Functions
+
+Polynomial and piecewise-constant regression models are in face special cases of a *basis function approach*.
+
+**Idea:** <br/><br/><br/><br/>
+
+Instead of fitting the linear model in $X$, we fit the model
+
+<br/><br/><br/><br/>
+
+Note that the basis functions are fixed and known.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+We can think of this model as a standard linear model with predictors defined by the basis functions and use least squares to estimate the unknown regression coefficients.
+
+<br/><br/>
+
+# Regression Splines
+
+*Regression splines* are a very common choice for basis function because they are quite flexible, but still interpretable. Regression splines extend upon polynomial regression and piecewise constant approaches seen previously.
+
+## Piecewise Polynomials
+
+Instead of fitting a high degree polynomial over the entire range of $X$, piecewise polynomial regression involves fitting separate low-degree polynomials over different regions of $X$.
+
+<br/><br/><br/><br/><br/><br/>
+
+For example, a pieacewise cubic with no knots is just a standard cubic polynomial. 
+
+<br/><br/>
+
+A pieacewise cubic with a single knot at point $c$ takes the form
+
+<br/><br/><br/><br/><br/><br/><br/><br/>
+
+Using more knots leads to a more flexible piecewise polynomial.
+
+<br/><br/><br/>
+
+In general, we place  $K$ knots throughout the range of $X$ and fit $K + 1$ polynomial regression models.
+
+\newpage
+
+## Constraints and Splines
+
+To avoid having too much flexibility, we can *constrain* the piecewise polynomial so that the fitted curve must be continuous.
+
+<br/><br/><br/>
+
+To go further, we could add two more constraints
+
+<br/><br/><br/>
+
+In other words, we are requiring the piecewise polynomials to be *smooth*.
+
+<br/><br/><br/>
+
+Each constraint that we impose on the piecewise cubic polynomials effectively frees up one degree of freedom, bu reducing the complexity of the resulting fit.
+
+<br/>
+
+The fit with continuity and 2 smoothness contraints is called a *spline*.
+
+<br/>
+
+A degree-$d$ spline is <br/><br/>
+
+```{r, fig.show='hold', out.width='33%', fig.height=5, echo = FALSE}
+Wage_small <- Wage[sample(1:nrow(Wage), 100),]
+
+spline_cubic <- lm(wage ~ bs(age, knots = c(50), degree = 3), data = Wage_small)
+
+df3 <- Wage_small[, c("age", "wage")] %>%
+  mutate(age_low = age*(age < 50),
+         age_high = age*(age >= 50)) %>%
+  select(-age)
+cts_piecewise_cubic <- lm(wage ~ poly(age_low, 3) + poly(age_high, 3), data = df3)
+
+piecewise_cubic1 <- lm(wage ~ poly(age, 3), data = Wage_small %>% filter(age < 50))
+piecewise_cubic2 <- lm(wage ~ poly(age, 3), data = Wage_small %>% filter(age >= 50))
+
+x1s <- data.frame(age = seq(min(Wage_small$age), 50))
+x2s <- data.frame(age = seq(50, max(Wage_small$age)))
+y1s <- predict(piecewise_cubic1, newdata = x1s)
+y2s <- predict(piecewise_cubic2, newdata = x2s)
+
+ggplot() +
+  geom_point(aes(age, wage), alpha = .3, data = Wage_small) +
+  geom_line(aes(x1s$age, y1s), colour = "red", size = 2) +
+  geom_line(aes(x2s$age, y2s), colour = "red", size = 2) +
+  geom_vline(aes(xintercept = 50), lty = 2) +
+  theme(text = element_text(size = 30))
+
+ggplot() +
+  geom_point(aes(age, wage), alpha = .3, data = Wage_small) +
+  geom_line(aes(Wage_small$age, cts_piecewise_cubic$fitted.values), colour = "red", size = 2) +
+  geom_vline(aes(xintercept = 50), lty = 2) +
+  theme(text = element_text(size = 30))
+
+ggplot() +
+  geom_point(aes(age, wage), alpha = .3, data = Wage_small) +
+  geom_line(aes(Wage_small$age, spline_cubic$fitted.values), colour = "red", size = 2) +
+  geom_vline(aes(xintercept = 50), lty = 2) +
+  theme(text = element_text(size = 30))
+
+```
+
+\newpage
+
+## Spline Basis Representation
+
+Fitting the spline regression model is more complex than the piecewise polynomial regression. We need to fit a degree $d$ piecewise polynomial and also constrain it and it's $d - 1$ derivatives to be continuous at the knots.
+
+<br/><br/><br/><br/><br/>
+
+The most direct way to represent a cubic spline is to start with the basis for a cubic polynomial and add one *truncated power basis* function per knot.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+Unfortunately, splines can have high variance at the outer range of the predictors. One solution is to add *boundary contraints*.
+
+\newpage
+
+
+## Choosing the Knots
+
+When we fit a spline, where should we place the knots?
+
+<br/><br/><br/><br/><br/><br/><br/>
+
+How many knots should we use?
+
+<br/><br/><br/><br/><br/><br/><br/>
+
+## Comparison to Polynomial Regression
+
+<br/><br/><br/>
+
+```{r, echo = FALSE}
+spline_fit <- lm(wage ~ ns(age, df = 15), data = Wage)
+poly_fit <- lm(wage ~ poly(age, 15), data = Wage)
+
+xs <- seq(16, 81)
+
+ggplot() +
+  geom_point(aes(age, wage), alpha = .3, data = Wage) +
+  geom_line(aes(xs, predict(spline_fit, data.frame(age = xs))), colour = "red") +
+  geom_line(aes(xs, predict(poly_fit, data.frame(age = xs))), colour = "blue")
+
+```
+
+
+# Generalized Additive Models
+
