@@ -245,3 +245,81 @@ ggplot() +
 
 # Generalized Additive Models
 
+So far we have talked about flexible ways to predict $Y$ based on a single predictor $X$.
+
+<br/><br/><br/><br/>
+
+*Generalized Additive Models (GAMs)* provide a general framework for extending a standard linear regression model by allowing non-linear functions of each of the variables while maintaining *additivity*.
+
+<br/><br/><br/>
+
+## GAMs for Regression
+
+A natural way to extend the multiple linear regression model to allow for non-linear relationships between feature and response:
+
+\newpage
+
+The beauty of GAMs is that we can use our fitting ideas in this chapter as building blocks for fitting an additive model.
+
+Example: Consider the Wage data.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+```{r, echo = FALSE, fig.show='hold', out.width='33%', fig.height = 6}
+library(gam)
+
+# plot function
+plot_f <- function(fit) {
+  preplot_obj <- gam:::preplot.Gam(fit)
+  for(var in names(preplot_obj)) {
+    obj <- preplot_obj[[var]]
+    if(class(obj$x) %in% c("integer", "numeric")) {
+      p <- ggplot() +
+        geom_ribbon(aes(obj$x, ymin = obj$y - 1.96*obj$se.y, ymax = obj$y + 1.96*obj$se.y), alpha = 0.2) +
+        geom_line(aes(obj$x, obj$y)) +
+        xlab(obj$xlab) + ylab(obj$ylab) +
+        theme(text = element_text(size = 30))
+    } else if(class(obj$x) %in% c("factor", "character")) {
+      p <- ggplot() +
+        geom_errorbar(aes(obj$x, ymin = obj$y - 1.96*obj$se.y, ymax = obj$y + 1.96*obj$se.y), alpha = 0.8) +
+        geom_point(aes(obj$x, obj$y)) +
+        xlab(obj$xlab) + ylab(obj$ylab) +
+        theme(text = element_text(size = 30), axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+    }
+    print(p)
+  }
+}
+
+gam_fit <- gam(wage ~ ns(year, df = 4) + ns(age, df = 5) + education, data = Wage)
+plot_f(gam_fit)
+
+```
+
+\newpage
+
+Pros and Cons of GAMs
+
+\newpage
+
+## GAMs for Classification
+
+GAMs can also be used in situations where $Y$ is categorical. Recall the logistic regression model:
+
+<br/><br/><br/><br/><br/><br/>
+
+A natural way to extend this model is for non-linear relationships to be used.
+
+<br/><br/><br/><br/><br/><br/>
+
+Example: Consider the Wage data.
+
+<br/><br/><br/><br/><br/><br/>
+
+```{r, echo = FALSE, fig.show='hold', out.width='33%', fig.height = 6}
+gam_fit_logit <- gam(I(wage > 250) ~ ns(year, df = 4) + ns(age, df = 5) + education, data = Wage, family = "binomial")
+plot_f(gam_fit_logit)
+```
+
+
+
+
