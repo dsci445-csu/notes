@@ -1,0 +1,169 @@
+---
+title: "Chapter 8: Tree-Based Methods"
+output:
+  pagedown::html_paged:
+    # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
+    css: ["../style/my-style-page.css", "default-fonts", "default-page", "default"]
+    self_contained: true
+    number_sections: true
+---
+
+```{r echo = FALSE, message = FALSE}
+library(tidyverse)
+library(scales)
+library(ISLR)
+library(knitr)
+library(dplyr)
+library(tidyr)
+library(splines)
+
+opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
+theme_set(theme_bw())
+
+set.seed(445)
+```
+
+We will introduce *tree-based* methods for regression and classification.
+
+<br/><br/><br/><br/><br/><br/>
+
+The set of splitting rules can be summarized in a tree $\Rightarrow$ "decision trees".
+
+<br/><br/><br/><br/><br/><br/>
+
+Combining a large number of trees can often result in dramatic improvements in prediction accuracy at the expense of interpretation.
+
+
+![](http://www.phdcomics.com/comics/archive/phd042007s.gif)
+
+Credit: http://phdcomics.com/comics.php?f=852
+
+Decision trees can be applied to both regression and classification problems. We will start with regression.
+
+# Regression Trees
+
+**Example:** We want to predict baseball salaries using the `Hittters` data set based on `Years` (the number of years that a player has been in the major leagues) and `Hits` (the number of hits he made the previous year).
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+```{r, echo = FALSE, fig.height=4}
+ggplot(Hitters) +
+  geom_point(aes(Years, Hits))
+```
+
+The predicted salary for players is given by the mean response value for the players in that box. Overall, the tree segments the players into 3 regions of predictor space.
+
+\newpage
+
+We now discuss the process of building a regression tree. There are to steps:
+
+<br/>
+
+1. <br/><br/><br/><br/><br/><br/>
+
+2. <br/><br/><br/><br/><br/><br/>
+
+<br/>
+
+How do we construct the regions $R_1, \dots, R_J$?
+
+<br/><br/><br/>
+
+The goal is to find boxes $R_1, \dots, R_J$ that minimize the RSS.
+
+<br/><br/><br/><br/><br/>
+
+The approach is *top-down* because
+
+<br/><br/><br/><br/><br/>
+
+The approach is *greedy* because
+
+\newpage
+
+In order to perform recursive binary splitting,
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+The process described above may produce good predictions on the training set, but is likely to overfit the data.
+
+<br/>
+
+A smaller tree, with less splits might lead to lower variance and better interpretation at the cost of a little bias.
+
+<br/><br/><br/><br/>
+
+A strategy is to grow a very large tree $T_0$ and then *prune* it back to obtain a *subtree*.
+
+\newpage
+
+Algorithm for building a regression tree:
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+```{r, echo = FALSE, fig.show='hold', out.width="33%", fig.height = 6}
+library(tree)
+
+## make validation set
+n <- nrow(Hitters)
+train <- sample(seq_len(n), round(n/2))
+test <- -train
+
+## fit regression tree
+tree_fit <- tree(Salary ~ ., data = Hitters, subset = train)
+plot(tree_fit)
+text(tree_fit, pretty = 0)
+
+## cross validation
+cv_tree <- cv.tree(tree_fit)
+
+ggplot() +
+  geom_point(aes(cv_tree$size, cv_tree$dev)) +
+  geom_line(aes(cv_tree$size, cv_tree$dev)) +
+  theme(text = element_text(size = 30))
+
+## pruned by CV
+prune_tree <- prune.tree(tree_fit, best = 3)
+plot(prune_tree)
+text(prune_tree, pretty = 0)
+```
+
+# Classification Trees
+
+A *classification tree* is very similar to a regression tree, except that it is used to predict a categorical response.
+
+<br/><br/><br/>
+
+For a classification tree, we predict that each observation belongs to the *most commonly occurring class* of training observation in the region to which it belongs.
+
+<br/><br/><br/><br/><br/><br/>
+
+The task of growing a classification tree is quite similar to the task of growing a regression tree.
+
+<br/><br/><br/><br/><br/><br/>
+
+It turns out that classification error is not sensitive enough.
+
+<br/><br/><br/><br/><br/><br/><br/>
+
+When building a classification tree, either the Gini index or the entropy are typically used to evaluate the quality of a particular split.
+
+# Trees vs. Linear Models
+
+Regression and classification trees have a very different feel from the more classical approaches for regression and classification. 
+
+<br/><br/><br/><br/><br/><br/><br/>
+
+Which method is better?
+
+<br/><br/><br/><br/>
+
+## Advantages and Disadvantages of Trees
+
+# Bagging
+
+# Random Forests
+
+# Boosting
+
