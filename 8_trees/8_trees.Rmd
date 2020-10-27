@@ -163,7 +163,78 @@ Which method is better?
 
 # Bagging
 
+Decision trees suffer from *high variance*.
+
+<br/><br/><br/><br/>
+
+*Bootstrap aggregation* or *bagging* is a general-purpose procedure for reducing the variance of a statistical learning method, particularly useful for trees.
+
+<br/><br/><br/><br/><br/><br/><br/><br/>
+
+So a natural way to reduce the variance is to take many training sets from the population, build a separate prediction model using each training set, and average the resulting predictions.
+
+<br/><br/><br/><br/><br/><br/>
+
+Of course, this is not practical because we generally do not have access to multiple training sets.
+
+\newpage
+
+While bagging can improve predictions for many regression methods, it's particularly useful for decision trees.
+
+<br/><br/><br/><br/>
+
+These trees are grown deep and not pruned.
+
+<br/><br/><br/><br/>
+
+How can bagging be extended to a classification problem?
+
+<br/><br/><br/><br/>
+
+## Out-of-Bag Error
+
+There is a very straightforward way to estimate the test error of a bagged model, without the need to perform cross-validation.
+
+\newpage
+
+## Interpretation
+
 # Random Forests
+
+*Random forests* provide an improvement over bagged trees by a small tweak that decorrelates the trees.
+
+<br/>
+
+As with bagged trees, we build a number of decision trees on bootstrapped training samples.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+In other words, in building a random forest, at each split in the tree, the algorithm is not allowed to consider a majority of the predictors.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+The main difference between bagging and random forests is the chouce of predictor subset size $m$.
 
 # Boosting
 
+*Boosting* is another approach for improving the prediction results from a decision tree.
+
+<br/><br/><br/>
+
+While bagging involves creating multiple copies of the original training data set using the bootstrap and fitting a separate decision tree on each copy,
+
+<br/><br/><br/><br/><br/><br/>
+
+Boosting does not involve boostrap sampling, instead each tree is fit on a modified version of the original data set.
+
+\newpage
+
+Boosting has three tuning parameters:
+
+<br/>
+
+1. <br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+2. <br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+3. <br/><br/><br/><br/><br/><br/><br/><br/><br/>

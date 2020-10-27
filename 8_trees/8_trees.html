@@ -28712,12 +28712,54 @@ break-after: always;
 </div>
 <div id="bagging" class="section level1">
 <h1><span class="header-section-number">4</span> Bagging</h1>
+<p>Decision trees suffer from <em>high variance</em>.</p>
+<p><br /><br /><br /><br /></p>
+<p><em>Bootstrap aggregation</em> or <em>bagging</em> is a general-purpose procedure for reducing the variance of a statistical learning method, particularly useful for trees.</p>
+<p><br /><br /><br /><br /><br /><br /><br /><br /></p>
+<p>So a natural way to reduce the variance is to take many training sets from the population, build a separate prediction model using each training set, and average the resulting predictions.</p>
+<p><br /><br /><br /><br /><br /><br /></p>
+<p>Of course, this is not practical because we generally do not have access to multiple training sets.</p>
+<div class="page-break-after"></div>
+<p>While bagging can improve predictions for many regression methods, it’s particularly useful for decision trees.</p>
+<p><br /><br /><br /><br /></p>
+<p>These trees are grown deep and not pruned.</p>
+<p><br /><br /><br /><br /></p>
+<p>How can bagging be extended to a classification problem?</p>
+<p><br /><br /><br /><br /></p>
+<div id="out-of-bag-error" class="section level2">
+<h2><span class="header-section-number">4.1</span> Out-of-Bag Error</h2>
+<p>There is a very straightforward way to estimate the test error of a bagged model, without the need to perform cross-validation.</p>
+<div class="page-break-after"></div>
+</div>
+<div id="interpretation" class="section level2">
+<h2><span class="header-section-number">4.2</span> Interpretation</h2>
+</div>
 </div>
 <div id="random-forests" class="section level1">
 <h1><span class="header-section-number">5</span> Random Forests</h1>
+<p><em>Random forests</em> provide an improvement over bagged trees by a small tweak that decorrelates the trees.</p>
+<p><br /></p>
+<p>As with bagged trees, we build a number of decision trees on bootstrapped training samples.</p>
+<p><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /></p>
+<p>In other words, in building a random forest, at each split in the tree, the algorithm is not allowed to consider a majority of the predictors.</p>
+<p><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /></p>
+<p>The main difference between bagging and random forests is the chouce of predictor subset size <span class="math inline">\(m\)</span>.</p>
 </div>
 <div id="boosting" class="section level1">
 <h1><span class="header-section-number">6</span> Boosting</h1>
+<p><em>Boosting</em> is another approach for improving the prediction results from a decision tree.</p>
+<p><br /><br /><br /></p>
+<p>While bagging involves creating multiple copies of the original training data set using the bootstrap and fitting a separate decision tree on each copy,</p>
+<p><br /><br /><br /><br /><br /><br /></p>
+<p>Boosting does not involve boostrap sampling, instead each tree is fit on a modified version of the original data set.</p>
+<div class="page-break-after"></div>
+<p>Boosting has three tuning parameters:</p>
+<p><br /></p>
+<ol style="list-style-type: decimal">
+<li><p><br /><br /><br /><br /><br /><br /><br /><br /><br /></p></li>
+<li><p><br /><br /><br /><br /><br /><br /><br /><br /><br /></p></li>
+<li><p><br /><br /><br /><br /><br /><br /><br /><br /><br /></p></li>
+</ol>
 </div>
 </div>
 
