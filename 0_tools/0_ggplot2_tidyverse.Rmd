@@ -1,5 +1,5 @@
 ---
-title: "Chapter 0: `ggplot2` and `tidyverse`"
+title: "Tools: `ggplot2` and `tidyverse`"
 output:
   pagedown::html_paged:
     # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
