@@ -1,0 +1,269 @@
+---
+title: "Chapter 9: Support Vector Machines"
+output:
+  pagedown::html_paged:
+    # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
+    css: ["../style/my-style-page.css", "default-fonts", "default-page", "default"]
+    self_contained: true
+    number_sections: true
+---
+
+```{r echo = FALSE, message = FALSE}
+library(tidyverse)
+library(scales)
+library(ISLR)
+library(knitr)
+library(dplyr)
+library(tidyr)
+library(e1071)
+
+opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
+theme_set(theme_bw())
+
+set.seed(445)
+```
+
+The *support vector machine* is an approach for classification that was developed in the computer science community in the 1990s and has grown in popularity.
+
+<br/><br/><br/>
+
+The support vector machine is a generalization of a simple and intuitive classifier called the *maximal margin classifier*. 
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+Support vector machines are intended for binary classification, but there are extensions for more than two classes.
+
+<br/><br/>
+
+![](https://assets.amuniversal.com/12e53860415d01300e80001dd8b71c47)
+
+Credit: https://dilbert.com/strip/2013-02-02
+
+# Maximal Margin Classifier
+
+In $p$-dimensional space, a *hyperplane* is a flat affine subspace of dimension $p -1$.
+
+<br/><br/><br/><br/><br/><br/>
+
+The mathematical definition of a hyperplane is quite simple,
+
+<br/><br/><br/><br/><br/><br/>
+
+This can be easily extended to the $p$-dimensional setting.
+
+<br/><br/><br/><br/><br/><br/>
+
+We can think of a hyperplane as dividing $p$-dimensional space into two halves.
+
+\newpage
+
+## Classificaton Using a Separating Hyperplane
+
+Suppose that we have a $n \times p$ data matrix $\boldsymbol X$ that consists of $n$ training observations in $p$-dimensional space.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+and that these observations fall into two classes.
+
+<br/><br/><br/><br/><br/>
+
+We also have a test observation.
+
+<br/><br/><br/><br/><br/>
+
+**Our Goal:**
+
+\newpage
+
+Suppose it is possible to construct a hyperplane that separates tthe training observations perfectly according to their class labels.
+
+<br/><br/><br/><br/><br/><br/>
+
+Then a separating hyperplane has the property that
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+If a separating hyperplane exists, we can use it to construct a very natural classifier:
+
+<br/><br/><br/><br/>
+
+That is, we classify the test observation $x^*$ based on the sign of $f(x^*) = \beta_0 + \beta_1x_1^* + \cdots +\beta_px_p^*$.
+
+<br/><br/><br/><br/>
+
+We can also use the magnitude of $f(x^*)$.
+
+\newpage
+
+## Maximal Margin Classifier
+
+If our data cab ve perfectly separated using a hyperplane, then there will exist an infinite number of such hyperplanes.
+
+<br/><br/><br/><br/>
+
+A natural choice for which hyperplane to use is the *maximal margin hyperplane* (aka the *optimal separating hyperplane*), which is the hyperplane that is farthest from the training observations.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+We can then classify a test observation based on which side of the maximal margin hyperplane it lies -- this is the *maximal margin classifier*.
+
+\newpage
+
+We now need to consider the task of constructing the maximal margin hyperplane based on a set of $n$ training observations and associated class labels.
+
+<br/><br/><br/>
+
+The maximal margin hyperplane is the solution to the optimization problem
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+This problem can be solved efficiently, but the details are outside the scope of this course.
+
+<br/>
+
+What happens when no separating hyperplane exists?
+
+# Support Vector Classifiers
+
+It's not always possible to separate training observations by a hyperplane. In fact, even if we can use a hyperplane to perfectly separate our training observations, it may not be desirable.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+We might be willing to consider a classifier based on a hyperplane that does *not perfectly* separate the two classes in the interest of
+
+<br/>
+
+- <br/><br/><br/>
+
+- <br/><br/><br/>
+
+<br/><br/><br/><br/>
+
+The *support vector classifier* does this by finding the largest possible margin between classes, but allowing some points to be on the "wrong" side of the margin, or even on the "wrong" side of the hyperplane.
+
+\newpage
+
+The support vector classifier xlassifies a test observation depending on which side of the hyperplane it lies. The hyperplane is chosen to correctly separate **most** of the training observations.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+Once we have solved this optimization problem, we classify $x^*$ as before by determining which side of the hyperplane it lies.
+
+<br/><br/><br/><br/>
+
+$\epsilon_i$
+
+<br/><br/><br/><br/>
+
+$C$
+
+\newpage
+
+The optimization problem has a very interesting property.
+
+<br/><br/><br/><br/><br/><br/><br/><br/>
+
+Observations that lie directly on the margin or on the wrong side of the margin are called *support vectors*.
+
+<br/><br/><br/><br/>
+
+The fact that only support vectors affect the classifier is in line with our assertion that $C$ controls the bias-variance tradeoff.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+Because the support vector classifier's decision rule is based only on a potentially small subset of the training observations means that it is robust to the behavior of observations far away from the hyperplane.
+
+\newpage
+
+# Support Vector Machines
+
+The support vector classifier is a natural approach for classification in the two-class setting...
+
+<br/><br/>
+
+```{r, echo=FALSE}
+library(mvtnorm)
+n <- 30
+dat <- data.frame(rbind(rmvnorm(n, mean = c(-3, -3)), 
+                        rmvnorm(n, mean = c(0, 0)), 
+                        rmvnorm(n, mean = c(3, 3))), 
+                  y = factor(c(rep("a", n), rep("b", n), rep("a", n))))
+
+dat %>%
+  ggplot() +
+  geom_point(aes(X1, X2, colour = y, shape = y)) +
+  theme(legend.position = "none")
+```
+We've seen ways to handle non-linear classification boundaries before.
+
+<br/><br/>
+
+In the case of the support vector classifier, we could address the problem of possible non-linear boundaries between classes by enlarging the feature space.
+
+<br/><br/><br/>
+
+Then our optimization problem would become
+
+\newpage
+
+The *support vector machine* allows us to enlarge the feature space used by the support classifier in a way that leads to efficient computation.
+
+<br/><br/>
+
+It turns out that the solution to the support vector classification optimization problem involves only *inner products* of the observations (instead of the observations themselves).
+
+<br/><br/><br/><br/>
+
+It can be shown that
+
+<br/>
+
+- <br/><br/><br/><br/>
+
+- <br/><br/><br/><br/>
+
+- <br/><br/><br/><br/>
+
+Now suppose every time the inner product shows up in the SVM representation above, we replaced it with a generalization.
+
+\newpage
+
+```{r, echo = FALSE}
+linear_fit <- svm(y ~ ., data = dat, kernel = "linear", scale = FALSE)
+poly_fit <- svm(y ~ ., data = dat, kernel = "polynomial", scale = FALSE, degree = 4)
+rad_fit <- svm(y ~ ., data = dat, kernel = "radial", scale = FALSE)
+
+grid <- expand.grid(X1 = seq(-5, 5, length.out = 500),
+                    X2 = seq(-5, 5, length.out = 500))
+
+grid %>%
+  mutate(linear = predict(linear_fit, ., type = "response")) %>%
+  mutate(polynomial = predict(poly_fit, ., type = "response")) %>%
+  mutate(radial = predict(rad_fit, ., type = "response")) %>%
+  gather(kernel, pred, -X1, -X2) %>%
+  ggplot() +
+  geom_tile(aes(X1, X2, fill = pred), alpha = .5) +
+  geom_point(aes(X1, X2, colour = y, shape = y), data = dat) +
+  facet_grid(.~kernel) +
+  theme(legend.position = "none")
+```
+
+
+
+# SVMs with More than Two Classes
+
+So far we have been limited to the case of binary classification. How can we exted SVMs to the more general case with some arbitrary number of classes?
+
+<br/><br/><br/>
+
+Suppose we would like to perform classification using SVMs and there are $K > 2$ classes.
+
+<br/>
+
+**One-Versus-One**
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+**One-Versus-All**
+
+
