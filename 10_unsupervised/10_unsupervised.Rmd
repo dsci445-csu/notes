@@ -1,0 +1,206 @@
+---
+title: "Chapter 10: Usupervised Learning"
+output:
+  pagedown::html_paged:
+    # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
+    css: ["../style/my-style-page.css", "default-fonts", "default-page", "default"]
+    self_contained: true
+    number_sections: true
+---
+
+```{r echo = FALSE, message = FALSE}
+library(tidyverse)
+library(scales)
+library(ISLR)
+library(knitr)
+library(dplyr)
+library(tidyr)
+
+opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
+theme_set(theme_bw())
+
+set.seed(445)
+```
+
+
+![](https://imgs.xkcd.com/comics/tasks.png)
+
+Credit: https://xkcd.com/1425/
+
+This chapter will focus on methods intended for the setting in which we only have a set of features $X_1, \dots, X_p$ measured on $n$ observations.
+
+# The Challenge of Unsupervised Learning
+
+
+Supervised learning is a well-understood area.
+
+<br/><br/><br/><br/><br/><br/><br/><br/>
+
+In contrast, unsupervised learning is often much more challenging.
+
+<br/><br/><br/><br/>
+
+Unsupervised learning is often performed as part of an *exploratory data analysis*.
+
+<br/>
+
+It can be hard to assess the results obtained from unsupervised learning methods.
+
+<br/><br/><br/><br/><br/><br/><br/><br/>
+
+Techniques for unsupervised learning are of growing importance in a number of fields.
+
+
+# Principal Components Analysis
+
+We have already seen principal components as a method for dimension reduction.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+*Principal Components Analysis (PCA)* refers to the process by which principal components are computed and the subsequent use of these components to understand the data.
+
+<br/><br/><br/><br/>
+
+Apart from producing derived variables forr use in supervised learning, PCA also serves as a tool for data visualization.
+
+\newpage
+
+## What are Principal Components?
+
+Suppose we wish to visualize $n$ observations with measurements on a set of $p$ features as part of an exploratory data analysis.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+**Goal:** We would like to find a low-dimensional representation of the data that captures as much of the information as possible.
+
+<br/><br/><br/><br/><br/>
+
+PCA provides us a tool to do just this.
+
+<br/><br/><br/>
+
+**Idea:** Each of the $n$ observations lives in $p$ dimensional space, but not all of these dimensions are equally interesting.
+
+\newpage
+
+The *first principal component* of a set of features $X_1, \dots, X_p$ is the normalized linear combination of the features 
+
+<br/><br/><br/><br/><br/><br/><br/><br/>
+
+that has the largest variance.
+
+<br/>
+
+Given a $n \times p$ data set $\boldsymbol X$, how do we compute the first principal component?
+
+\newpage
+
+There is a nice geometric interpretation for the first principal component.
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+After the first principal component $Z_1$ of the features has been determined, we can find the second principal component, $Z_2$. The second principal component is the linear combination of $X_1, \dots, X_p$ that has maximal variance out of all linear combinations that are uncorrelated with $Z_1$.
+
+\newpage
+
+Once we have computed the principal components, we can plot them against each other to produce low-dimensional views of the data. 
+
+<br/>
+
+```{r, fig.height = 7}
+str(USArrests)
+
+pca <- prcomp(USArrests, center = TRUE, scale = TRUE) # get loadings
+
+summary(pca) # summary
+
+pca$rotation # principal components loading matrix
+
+## plot scores + directions
+biplot(pca)
+```
+
+\newpage
+
+## Scaling Variables
+
+We've already talked about how when PCA is performed, the varriables should be centered to have mean zero. 
+
+<br/><br/><br/><br/>
+
+This is in contrast to other methods we've seen before.
+
+<br/><br/><br/><br/>
+
+```{r, fig.height = 5.5, echo = FALSE}
+pca_unscaled <- prcomp(USArrests, center = TRUE, scale = FALSE) # get loadings
+
+## plot scores + directions
+biplot(pca_unscaled)
+```
+
+\newpage
+
+## Uniqueness
+
+Each principal component loading vector is unique, up to a sign flip.
+
+<br/><br/><br/><br/><br/><br/>
+
+Similarly, the score vectors are unique up to a sign flip.
+
+<br/><br/><br/><br/>
+
+## Proportion of Variance Explained
+
+We have seen using the `USArrests` data that e can summarize $50$ observations in $4$ dimensions using just the first two principal component score vectors and the first two principal component vectors.
+
+**Question:** <br/><br/><br/><br/>
+
+More generally, we are interested in knowing the *proportion of vriance explained (PVE)* by each principal component.
+
+\newpage
+
+## How Many Principal Components to Use
+
+In general, a $n times p$ matrix $\boldsymbol X$ has $\min(n - 1, p)$ distinctt principal components.
+
+<br/><br/>
+
+Rather, we would like to just use the first few principal components in order to visualize or interpret the data.
+
+<br/><br/><br/><br/>
+
+We typically decide on the number of principal components required by examining a *scree plot*.
+
+<br/><br/>
+
+```{r, echo = FALSE}
+pca_sum <- summary(pca)$importance
+
+ggplot() +
+  geom_point(aes(1:ncol(pca_sum), pca_sum[2,])) +
+  geom_line(aes(1:ncol(pca_sum), pca_sum[2,])) +
+  xlab("Principal Component") + ylab("PVE")
+```
+
+\newpage
+
+## Other Uses for Principal Components
+
+We've seen previously that we can perform regression using the principal component score vectors as features for dimension reduction.
+
+<br/><br/><br/><br/><br/><br/>
+
+Many statistical techniques can be easily adapted to use the $n \times M$ matrix whose columns are the first $M << p$ principal components.
+
+<br/><br/><br/><br/>
+
+This can lead to *less noisy* results.
+
+# Clustering
+
+## K Means
+
+## Hierarchical Clustering
+
