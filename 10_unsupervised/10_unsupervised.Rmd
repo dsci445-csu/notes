@@ -15,6 +15,8 @@ library(ISLR)
 library(knitr)
 library(dplyr)
 library(tidyr)
+library(dendextend)
+
 
 opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
 theme_set(theme_bw())
@@ -200,7 +202,239 @@ This can lead to *less noisy* results.
 
 # Clustering
 
-## K Means
+*Clustering* refers to a broad set of techniques for finding *subgroups* in a data set.
+
+<br/><br/><br/><br/><br/><br/><br/><br/>
+
+For instance, suppose we have a set of $n$ observations, each with $p$ features. The $n$ observations could correspond to tissue samples for patients with breast cancer and the $p$ features could correspond to
+
+<br/><br/><br/><br/><br/><br/><br/><br/>
+
+We may have reason to believe there is heterogeneity among the $n$ observations.
+
+<br/><br/><br/><br/><br/><br/>
+
+This is *unsupervised* because
+
+\newpage
+
+Both clustering and PCA seek to simplify the data via a small number of summaries.
+
+<br/>
+
+- PCA <br/><br/><br/>
+
+- Clustering <br/><br/><br/>
+
+Since clustering is popular in many fields, there are many ways to cluster.
+
+<br/><br/><br/>
+
+- $K$-means clustering <br/><br/><br/><br/><br/><br/>
+
+- Hierarchical clustering <br/><br/><br/><br/><br/><br/>
+
+In general, we can cluster observations on the basis of features or we can cluster features on the basis of observations.
+
+\newpage
+
+
+
+
+
+## K-Means Clustering
+
+Simple and elegant approach to parition a data set into $K$ distinct, non-overlapping clusters.
+
+<br/><br/><br/><br/><br/><br/>
+
+```{r, echo = FALSE, fig.show='hold', out.width="33%", fig.height = 6}
+X <- mvtnorm::rmvnorm(100, mean = c(0, 0))
+X[1:33,] <- X[1:33,] + matrix(rep(c(-3, -3), 33), ncol = 2, byrow = TRUE)
+X[34:67,] <- X[34:67,] + matrix(rep(c(3, 0), 34), ncol = 2, byrow = TRUE)
+
+K2 <- kmeans(X, 2)
+K3 <- kmeans(X, 3)
+K4 <- kmeans(X, 4)
+
+data.frame(X) %>%
+  ggplot() +
+  geom_point(aes(X1, X2, colour = as.factor(K2$cluster)), size = 2) +
+  theme(legend.position = "none", text = element_text(size = 30)) +
+  ggtitle("K = 2") +
+  xlab("") + ylab("")
+
+data.frame(X) %>%
+  ggplot() +
+  geom_point(aes(X1, X2, colour = as.factor(K3$cluster)), size = 2) +
+  theme(legend.position = "none", text = element_text(size = 30)) +
+  ggtitle("K = 3") +
+  xlab("") + ylab("")
+
+data.frame(X) %>%
+  ggplot() +
+  geom_point(aes(X1, X2, colour = as.factor(K4$cluster)), size = 2) +
+  theme(legend.position = "none", text = element_text(size = 30)) +
+  ggtitle("K = 4") +
+  xlab("") + ylab("")
+```
+
+<br/>
+
+The $K$-means clustering procedure results from a simple and intuitive mathematical problem. Let $C_1, \dots, C_K$ denote sets containing the indices of observations in each cluster. These satisfy two properties:
+
+<br/>
+
+1. <br/><br/><br/><br/>
+
+2. <br/><br/><br/><br/>
+
+**Idea:** <br/><br/><br/><br/>
+
+\newpage
+
+The *within-cluster variation* for cluster $C_k$ is a measure of the amount by which the observations within a cluster differ from each other.
+
+<br/><br/><br/><br/><br/><br/>
+
+To solve this, we need to define within-cluster variation.
+
+<br/><br/><br/><br/><br/><br/>
+
+This results in the following optimization problem that defines $K$-means clustering:
+
+<br/><br/><br/><br/><br/><br/>
+
+A very simple algorithm has been shown to find a local optimum to this problem:
+
+\newpage
 
 ## Hierarchical Clustering
+
+One potential disadvantage of $K$-means clustering is that it requires us to specify the number of clusters $K$. *Hierarchical clustering* is an alternative that does not require we commit to a particular $K$.
+
+<br/><br/><br/><br/>
+
+We will discuss *bottom-up* or *agglomerative* clustering.
+
+<br/><br/><br/><br/>
+
+### Dendrograms
+
+
+<br/>
+
+```{r, echo = FALSE, fig.show='hold', out.width="50%", fig.height = 6}
+data.frame(X) %>%
+  ggplot() +
+  geom_point(aes(X1, X2), size = 2) +
+  theme(text = element_text(size = 30)) +
+  xlab("") + ylab("")
+
+dist_mat <- dist(X)
+hc <- hclust(dist_mat)
+dend <- as.dendrogram(hc)
+
+plot(dend)
+```
+
+\newpage
+
+Each *leaf* of the dendrogram represents one of the $100$ simulated data points.
+
+<br/>
+
+As we move up the tree, leaves begin to fuse into branches, which correspond to observations that are similar to each other.
+
+<br/><br/><br/><br/><br/>
+
+For any two observations, we can look for the point in the tree where branches containing those two observations are first fused.
+
+
+<br/><br/><br/><br/><br/>
+
+How do we get clusters from the dendrogram?
+
+<br/>
+
+```{r, echo = FALSE, fig.show='hold', out.width="50%", fig.height = 6}
+plot(color_labels(dend, k = 2))
+abline(h = 9, lty = 2)
+
+plot(color_labels(dend, k = 3))
+abline(h = 5, lty = 2)
+```
+
+\newpage
+
+The term *hierarchical* refers to the fact that clusters obtained by cutting the dendrogram at a given height are necessarily nested within the clusters obtained by cutting the dendrogram at a greater height.
+
+<br/><br/><br/><br/><br/><br/>
+
+### Algorithm
+
+First, we need to define some sort of *dissimilarity* metric between pairs of observations.
+
+<br/><br/><br/>
+
+Then the algorithm proceeds iteratively.
+
+<br/><br/>
+
+```{r, echo = FALSE, fig.show='hold', out.width="50%", fig.height = 6}
+X_small <- mvtnorm::rmvnorm(10, c(0, 0))
+
+data.frame(X_small) %>%
+  ggplot() +
+  geom_text(aes(X1, X2, label = 1:10), size = 4) +
+  theme(text = element_text(size = 30)) +
+  xlab("") + ylab("")
+
+plot(hclust(dist(X_small)))
+```
+
+\newpage
+
+More formally,
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+One issue has not yet been addressed.
+
+<br/><br/><br/>
+
+How do we determine the dissimilarity between two clusters if one or bother of them contains multiple observations?
+
+<br/><br/><br/><br/><br/>
+
+1. <br/><br/><br/>
+
+2. <br/><br/><br/>
+
+3. <br/><br/><br/>
+
+4. <br/><br/><br/>
+
+\newpage
+
+### Choice of Dissimilarity Metric
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+## Practical Considerations in Clustering
+
+In order to perform clustering, some decisions should be made.
+
+<br/>
+
+- <br/><br/><br/>
+
+- <br/><br/><br/><br/><br/><br/>
+
+- <br/><br/><br/>
+
+Each of these decisions can have a strong impact on the results obtained. What to do?
+
+
+
 
