@@ -1,6 +1,6 @@
 ---
 title: "DSCI445: Statistical Machine Learning"
-author: "Fall 2020"
+author: "Fall 2021"
 date: "http://dsci445-csu.github.io"
 output:
   pagedown::html_paged:
@@ -11,8 +11,9 @@ output:
 ---
 
 Dr. Andee Kaplan  
-Lectures: MWF 9am - 9:50am Online via Zoom (see Canvas for link and password)  
-Office Hours: MW 10am - 11am Online via Zoom (see Canvas for link and password)  
+Lectures: MW 9am - 9:50am Engineering	E 104  
+Labs: F 9am-9:50am Weber Building	205  
+Office Hours: TR 1:30pm - 2:30pm Online via Zoom (see Canvas for link)  
 andee.kaplan@colostate.edu
 
 
@@ -29,7 +30,13 @@ By end of course, students will be able to:
 
 ## COVID-19
 
-This will be a learn-as-we-go situation. Please be fexible! We're going to try to have live lectures on Zoom, which I will record and post to Canvas.
+We will have live lectures with office hours on Zoom. I will record lectures to Canvas for those who need to miss class due to vaccination or illness (quality not guaranteed).   
+
+**Important information for students: All students are expected and required to report any COVID-19 symptoms to the university immediately, as well as exposures or positive tests from a non-CSU testing location.** 
+
+If you suspect you have symptoms, or if you know you have been exposed to a positive person or have tested positive for COVID, you are required to fill out the COVID Reporter (https://covid.colostate.edu/reporter/). If you know or believe you have been exposed, including living with someone known to be COVID positive, or are symptomatic, it is important for the health of yourself and others that you complete the online COVID Reporter. Do not ask your instructor to report for you. If you do not have internet access to fill out the online COVID-19 Reporter, please call (970) 491-4600. You may also report concerns in your academic or living spaces regarding COVID exposures through the COVID Reporter. You will not be penalized in any way for reporting. When you complete the COVID Reporter for any reason, the CSU Public Health office is notified. Once notified, that office will contact you and, depending upon each situation, will conduct contact tracing, initiate any necessary public health requirements and notify you if you need to take any steps. 
+
+For the latest information about the University's COVID resources and information, please visit the **CSU COVID-19 site**: https://covid.colostate.edu/.
 
 ## Prerequisites
 
@@ -57,13 +64,13 @@ All graded classwork must be fully **reproducible** by the instructor and TA. In
 
 **Project (30%)** There will be a final project that will consist of an analysis of real data using the tools learned in class (this can include participation in an online data science competition, e.g. Kaggle).
 
-You will write a paper and give an in class presentation. More details will be announced later. 
+You will write a paper and give an in-class presentation. More details will be announced later. 
 
 Grades will be assigned according to the following intervals:
 
 ```{r echo = FALSE, warning=FALSE}
 grades <- data.frame(Grade = c("A", "A-", "B+", "B", "B-", "C+", "C", "D", "F"),
-                     Interval = c("[100, 95]", "(95, 90]", "(90, 87]", 
+                     Interval = c("[100, 93]", "(93, 90]", "(90, 87]", 
                                   "(87, 83]", "(83, 80]", "(80, 77]", "(77, 70]", 
                                   "(70, 60]", "(60, 0]"))
 
