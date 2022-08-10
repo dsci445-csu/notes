@@ -11,8 +11,8 @@ output:
 ---
 
 Dr. Andee Kaplan  
-Lectures/Labs: MWF 9am - 9:50am Weber	Building 205
-Office Hours: W 10am - 1pm Animal Science Bulding 31 
+Lectures/Labs: MWF 9am - 9:50am Weber	Building 205  
+Office Hours: W 10am - 1pm Animal Science Bulding 31  
 andee.kaplan@colostate.edu
 
 
