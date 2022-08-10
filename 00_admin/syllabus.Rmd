@@ -1,6 +1,6 @@
 ---
 title: "DSCI445: Statistical Machine Learning"
-author: "Fall 2021"
+author: "Fall 2022"
 date: "http://dsci445-csu.github.io"
 output:
   pagedown::html_paged:
@@ -11,9 +11,8 @@ output:
 ---
 
 Dr. Andee Kaplan  
-Lectures: MW 9am - 9:50am Engineering	E 104  
-Labs: F 9am-9:50am Weber Building	205  
-Office Hours: TR 1:30pm - 2:30pm Online via Zoom (see Canvas for link)  
+Lectures/Labs: MWF 9am - 9:50am Weber	Building 205
+Office Hours: W 10am - 1pm Animal Science Bulding 31 
 andee.kaplan@colostate.edu
 
 
@@ -29,8 +28,6 @@ By end of course, students will be able to:
 1. Write technical reports describing their work.
 
 ## COVID-19
-
-We will have live lectures with office hours on Zoom. I will record lectures to Canvas for those who need to miss class due to vaccination or illness (quality not guaranteed).   
 
 **Important information for students: All students are expected and required to report any COVID-19 symptoms to the university immediately, as well as exposures or positive tests from a non-CSU testing location.** 
 
@@ -50,15 +47,15 @@ Optional Reference: The Elements of Statistical Learning: Data Mining, Inference
 
 ## Computing
 
-We will use RStudio (https://rstudio.com), R (https://r-project.org), GitHub (https://github.com), and ggplot2 (https://ggplot2.tidyverse.org). All software is free and open source.
+We will use RStudio (https://rstudio.com), R (https://r-project.org), GitHub (https://github.com). All software is free and open source.
 
-**Please install** on your own computer or use RStudio Cloud (details to follow). 
+**Please install** on your own computer or use the class RStudio Server (details to follow). 
 
 For your homeworks, you are free to use any other language you like, but I may not be able to help you with your computing if the language is unfamiliar to me.
 
 ## Classwork and Grading
 
-All graded classwork must be fully **reproducible** by the instructor and TA. In other words, we need to be able to run your code and have it produce the product you turned in. If this is not the case, it will be reflected in the grading. A copy of your homework will need to be turned in to https://canvas.colostate.edu and the corresponding document used to generate your homework will need to exist on https://rstudio.cloud for full credit.
+All graded classwork must be fully **reproducible** by the instructor and TA. In other words, we need to be able to run your code and have it produce the product you turned in. If this is not the case, it will be reflected in the grading. A copy of your homework will need to be turned in to https://canvas.colostate.edu and the corresponding document used to generate your homework will need to exist on the server for full credit.
 
 **Homework (70%)** Homework will be assigned bi-weekly. All homework assignments are due at **4pm on the due date**. Each homework assignment will receive equal weight in the final grade and the one lowest homework assignment grades will be dropped. Late work is not accepted except in rare cases (see Documented emergencies below).
 
