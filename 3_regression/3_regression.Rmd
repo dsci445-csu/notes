@@ -46,7 +46,7 @@ For example, we may be interested in regressing `sales` onto `TV` by fitting the
 
 Once we have used training data to produce estimates $\hat{\beta}_0$ and $\hat{\beta}_1$, we can predict future sales on the basis of a particular TV advertising budget.
 
-<br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
 
 ## Estimating the Coefficients
 
@@ -56,7 +56,7 @@ Let $(x_1, y_1), \dots, (x_n, y_n)$ represent $n$ observation pairs, each of whi
 
 <br/><br/><br/>
 
-**Goal:** Obtain coefficient estimates $\hat{beta}_0$ and $\hat{\beta}_1$ such that the linear model fits the available data well.
+**Goal:** Obtain coefficient estimates $\hat{\beta}_0$ and $\hat{\beta}_1$ such that the linear model fits the available data well.
 
 <br/><br/>
 
@@ -71,24 +71,34 @@ $$
 \hat{\beta}_0 = 
 $$
 
-We can get these estimates using the following commands in `R`:
+We can get these estimates using the following commands in `R` and `tidymodels`:
 
 ```{r}
+library(tidymodels) ## load library
+
 ## load the data in
-ads <- read_csv("../data/Advertising.csv")
+ads <- read_csv("../data/Advertising.csv", col_select = -1) 
 
 ## fit the model
-model <- lm(sales ~ TV, data = ads)
+lm_spec <- linear_reg() |>
+  set_mode("regression") |>
+  set_engine("lm")
 
-summary(model)
+slr_fit <- lm_spec |>
+  fit(sales ~ TV, data = ads)
+
+slr_fit |>
+  pluck("fit") |>
+  summary()
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE}
 ggplot(aes(TV, sales), data = ads) +
   geom_point() +
   geom_smooth(method = "lm")
 ```
 
+<br/><br/>
 
 ## Assessing Accuracy
 
@@ -125,7 +135,9 @@ The quality of the fit is usually measured by the *residual standard error* and 
 $R^2$: The RSE provides an absolute measure of lack of fit, but is measured in the units of $Y$. So, we don't know what a "good" RSE value is! $R^2$ gives the proportion of variation in $Y$ explained by the model.
 
 ```{r}
-summary(model)
+slr_fit |>
+  pluck("fit") |>
+  summary()
 ```
 
 # Multiple Linear Regression
@@ -155,13 +167,15 @@ As with the case of simple linear regression, the coefficients $\beta_0, \beta_1
 The parameters are again estimated using the same least squares approach that we saw in the context of simple linear regression.
 
 ```{r}
-# model_2 <- lm(sales ~ TV + radio + newspaper, data = ads)
-model_2 <- lm(sales ~ ., data = ads[, -1])
+# mlr_fit <- lm_spec |> fit(sales ~ TV + radio + newspaper, data = ads) 
+mlr_fit <- lm_spec |> 
+  fit(sales ~ ., data = ads) 
 
-summary(model_2)
+mlr_fit |>
+  pluck("fit") |>
+  summary()
 ```
 
-\newpage
 
 ## Some Important Questions
 
@@ -211,22 +225,23 @@ Be careful with using these alone, because $R^2$ will **always increase** as mor
 
 ```{r}
 # model with TV, radio, and newspaper
-summary(model_2)
+mlr_fit |> pluck("fit") |> summary()
+```
 
+```{r}
 # model without newspaper
-summary(lm(sales ~ TV + radio, data = ads))
+lm_spec |> fit(sales ~ TV + radio, data = ads) |>
+  pluck("fit") |> summary()
 ```
 
 It may also be useful to plot residuals to get a sense of the model fit.
 
-```{r}
+```{r, fig.height=2}
 ggplot() +
-  geom_point(aes(model_2$fitted.values, model_2$residuals))
+  geom_point(aes(mlr_fit$fit$fitted.values, mlr_fit$fit$residuals))
 ```
 
 # Other Considerations
-
-
 
 ## Categorical Predictors
 
@@ -246,6 +261,8 @@ mpg %>%
   ggpairs() # plot matrix
 ```
 
+\newpage
+
 To incorporate these categorical variables into the model, we will need to introduce $k - 1$ dummy variables, where $k =$ the number of levels in the variable, for each qualitative variable.
 
 For example, for `drv`, we have 3 levels: `4`, `f`, and `r`. 
@@ -253,7 +270,9 @@ For example, for `drv`, we have 3 levels: `4`, `f`, and `r`.
 <br/><br/><br/><br/><br/><br/>
 
 ```{r}
-lm(hwy ~ displ + cty + drv, data = mpg) %>%
+lm_spec |>
+  fit(hwy ~ displ + cty + drv, data = mpg) |>
+  pluck("fit") |>
   summary()
 ```
 
@@ -270,7 +289,9 @@ The standard regression model provides interpretable results and works well in m
 The additive assumption assumes that the effect of each predictor on the response is not affected by the value of the other predictors. What if we think the effect should depend on the value of another predictor?
 
 ```{r}
-lm(sales ~ TV + radio + TV*radio, data = ads) %>%
+lm_spec |>
+  fit(sales ~ TV + radio + TV*radio, data = ads) |>
+  pluck("fit") |>
   summary()
 ```
 
@@ -291,8 +312,9 @@ ggplot(data = mpg, aes(displ, hwy)) +
 \newpage
 
 ```{r}
-lm(hwy ~ displ + I(displ^2), data = mpg) %>%
-  summary()
+lm_spec |>
+  fit(hwy ~ displ + I(displ^2), data = mpg) |>
+  pluck("fit") |> summary()
 ```
 
 ## Potential Problems
@@ -320,28 +342,33 @@ Given a value for $K$ and a prediction point $x_0$, KNN regression first identif
 <br/>
 
 ```{r, fig.show="hold", out.width = "33%", fig.height = 7}
-library(caret) # package for knn
 set.seed(445) #reproducibility
 
+## generate data
 x <- rnorm(100, 4, 1) # pick some x values
 y <- 0.5 + x + 2*x^2 + rnorm(100, 0, 2) # true relationship
 df <- data.frame(x = x, y = y) # data frame of training data
 
+knn_spec <- nearest_neighbor(mode = "regression")
 for (k in seq(2, 10, by = 2)) {
-  knn_model <- knnreg(y ~ x, data = df, k = k) # fit knn model
-  
-  ggplot(df) +
+  knn_spec |>
+    fit(y ~ x, data = df, neighbors = k) |>
+    augment(new_data = df) |>
+    ggplot() +
     geom_point(aes(x, y)) +
-    geom_line(aes(x, predict(knn_model, df)), colour = "red") +
+    geom_line(aes(x, .pred), colour = "red") +
     ggtitle(paste("KNN, k = ", k)) +
     theme(text = element_text(size = 30)) -> p
-  
-  print(p) # knn plots
+    
+  print(p)
 }
 
-ggplot(df) +
+lm_spec |>
+  fit(y ~ x, df) |>
+  augment(new_data = df) |>
+  ggplot() +
     geom_point(aes(x, y)) +
-    geom_line(aes(x, lm(y ~ x, df)$fitted.values), colour = "red") +
+    geom_line(aes(x, .pred), colour = "red") +
     ggtitle("Simple Linear Regression") +
     theme(text = element_text(size = 30)) # slr plot
 

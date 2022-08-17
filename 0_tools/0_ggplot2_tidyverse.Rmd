@@ -43,28 +43,28 @@ Anscombe's Quartet is comprised of 4 datasets that have nearly identical simple 
 library(dplyr)
 library(tidyr)
 
-anscombe %>%
-  gather(variable, value) %>%
-  separate(variable, into = c("variable", "dataset"), sep = 1) %>%
-  group_by(variable, dataset) %>%
-  mutate(id = 1:n()) %>%
-  spread(variable, value) %>%
-  group_by(dataset) %>%
+anscombe |>
+  gather(variable, value) |>
+  separate(variable, into = c("variable", "dataset"), sep = 1) |>
+  group_by(variable, dataset) |>
+  mutate(id = 1:n()) |>
+  spread(variable, value) |>
+  group_by(dataset) |>
   summarise(mean_x = mean(x), sd_x = sd(x),
             mean_y = mean(y), sd_y = sd(y),
-            cor = cor(x, y)) %>%
+            cor = cor(x, y)) |>
   knitr::kable()
 ```
 
 But this doesn't tell the whole story. Let's look closer at these datasets.
 
 ```{r, echo=FALSE}
-anscombe %>%
-  gather(variable, value) %>%
-  separate(variable, into = c("variable", "dataset"), sep = 1) %>%
-  group_by(variable, dataset) %>%
-  mutate(id = 1:n()) %>%
-  spread(variable, value) %>%
+anscombe |>
+  gather(variable, value) |>
+  separate(variable, into = c("variable", "dataset"), sep = 1) |>
+  group_by(variable, dataset) |>
+  mutate(id = 1:n()) |>
+  spread(variable, value) |>
   ggplot() +
   geom_point(aes(x, y)) +
   geom_smooth(aes(x, y), method = "lm", se = FALSE) +
@@ -171,8 +171,8 @@ ggplot(data = mpg) +
 So we can say, yes, cars with larger engines have worse fuel efficiency. But there is more going on here.
 
 ```{r echo = FALSE}
-mpg %>%
-  mutate(outlier = displ > 5 & hwy > 20) %>%
+mpg |>
+  mutate(outlier = displ > 5 & hwy > 20) |>
   ggplot() +
   geom_point(mapping = aes(displ, hwy, colour = outlier, size = outlier)) +
   scale_color_manual(values = c("black", "red")) +
@@ -328,12 +328,12 @@ To facilitate easy transformation of data, we're going to learn how to use the `
 
 We will do this with the `recent_grads` data from fivethiryeight.com we just read into `R` using `readr`.
 
-### `%>%`
+### `|>`
 
-Before we get into the verbs in `dplyr`, I want to introduce a new paradigm. All of the functions in the tidyverse are structured such that the first argument is a data frame and they also return a data frame. This allows for efficient use of the pipe operator `%>%` (pronounce this as "then").
+Before we get into the verbs in `dplyr`, I want to introduce a new paradigm. All of the functions in the tidyverse are structured such that the first argument is a data frame and they also return a data frame. This allows for efficient use of the pipe operator `|>` (pronounce this as "then").
 
 ```{r, eval=FALSE}
-a %>% b()
+a |> b()
 ```
 
 Taked the result on the left and passes it to the first argument on the right. This is equivalent to
@@ -353,21 +353,21 @@ The first argument is the name of the data frame. The second and subsequent argu
 Let's subset the `recent_grad` data set to focus on Statistics majors.
 
 ```{r}
-recent_grads %>% filter(Major == "STATISTICS AND DECISION SCIENCE")
+recent_grads |> filter(Major == "STATISTICS AND DECISION SCIENCE")
 ```
 
 Alternatively, we could look at all Majors in the same category, "Computers & Mathematics", for comparison.
 
 ```{r}
-recent_grads %>% filter(Major_category == "Computers & Mathematics")
+recent_grads |> filter(Major_category == "Computers & Mathematics")
 ```
 
-Notice we are using `%>%` to pass the data frame to the first argument in `filter()` and we do not need to use `recent_grads$Colum Name` to subset our data.
+Notice we are using `|>` to pass the data frame to the first argument in `filter()` and we do not need to use `recent_grads$Colum Name` to subset our data.
 
 `dplyr` functions never modify their inputs, so if we need to save the result, we have to do it using `<-`.
 
 ```{r}
-math_grads <- recent_grads %>% filter(Major_category == "Computers & Mathematics")
+math_grads <- recent_grads |> filter(Major_category == "Computers & Mathematics")
 ```
 
 Everything we've already learned about logicals and comparisons comes in handy here, since the second argument of `filter()` is a comparitor expression telling `dplyr` what rows we care about.
@@ -377,7 +377,7 @@ Everything we've already learned about logicals and comparisons comes in handy h
 `arrange()` works similarly to `filter()` except that it changes the order of rows rather than subsetting. Again, the first parameter is a data frame and the additional parameters are a set of column names to order by. 
 
 ```{r}
-math_grads %>% arrange(ShareWomen)
+math_grads |> arrange(ShareWomen)
 ```
 
 If we provide more than one column name, each additional column will be used to break ties in the values of preceding columns.
@@ -385,7 +385,7 @@ If we provide more than one column name, each additional column will be used to 
 We can use `desc()` to re-order by a column in descending order.
 
 ```{r}
-math_grads %>% arrange(desc(ShareWomen))
+math_grads |> arrange(desc(ShareWomen))
 ```
 
 ### `select()`
@@ -393,7 +393,7 @@ math_grads %>% arrange(desc(ShareWomen))
 Sometimes we have data sets with a ton of variables and often we want to narrow down the ones that we actually care about. `select()` allows us to do this based on the names of the variables.
 
 ```{r}
-math_grads %>% select(Major, ShareWomen, Total, Full_time, P75th)
+math_grads |> select(Major, ShareWomen, Total, Full_time, P75th)
 ```
 
 We can also use 
@@ -406,13 +406,13 @@ We can also use
 - `everything()` mathes all columns
 
 ```{r}
-math_grads %>% select(Major, College_jobs:Low_wage_jobs)
+math_grads |> select(Major, College_jobs:Low_wage_jobs)
 ```
 
 `rename()` is a function that will rename an existing column and select all columns.
 
 ```{r}
-math_grads %>% rename(Code_major = Major_code)
+math_grads |> rename(Code_major = Major_code)
 ```
 
 ### `mutate()`
@@ -420,11 +420,11 @@ math_grads %>% rename(Code_major = Major_code)
 Besides selecting sets of existing columns, we can also add new columns that are functions of existing columns with `mutate()`. `mutate()` always adds new columns at the end of the data frame.
 
 ```{r}
-math_grads %>% mutate(Full_time_rate = Full_time_year_round/Total)
+math_grads |> mutate(Full_time_rate = Full_time_year_round/Total)
 
 # we can't see everything
-math_grads %>% 
-  mutate(Full_time_rate = Full_time_year_round/Total) %>% 
+math_grads |> 
+  mutate(Full_time_rate = Full_time_year_round/Total) |> 
   select(Major, ShareWomen, Full_time_rate)
 ```
 
@@ -433,13 +433,13 @@ math_grads %>%
 The last major verb is summarise(). It collapses a data frame to a single row based on a summary function.
 
 ```{r}
-math_grads %>% summarise(mean_major_size = mean(Total))
+math_grads |> summarise(mean_major_size = mean(Total))
 ```
 
 A useful summary function is a count (`n()`), or a count of non-missing values (`sum(!is.na())`).
 
 ```{r}
-math_grads %>% summarise(mean_major_size = mean(Total), num_majors = n())
+math_grads |> summarise(mean_major_size = mean(Total), num_majors = n())
 ```
 
 ### `group_by()`
@@ -447,9 +447,9 @@ math_grads %>% summarise(mean_major_size = mean(Total), num_majors = n())
 `summarise()` is not super useful unless we pair it with `group_by()`. This changes the unit of analysis from the complete dataset to individual groups. Then, when we use the `dplyr` verbs on a grouped data frame they'll be automatically applied "by group".
 
 ```{r}
-recent_grads %>%
-  group_by(Major_category) %>%
-  summarise(mean_major_size = mean(Total, na.rm = TRUE)) %>%
+recent_grads |>
+  group_by(Major_category) |>
+  summarise(mean_major_size = mean(Total, na.rm = TRUE)) |>
   arrange(desc(mean_major_size))
 ```
 
@@ -502,7 +502,7 @@ Being tidy with our data is useful because it's a consistent set of rules to fol
 
 ```{r}
 # Compute rate per 10,000
-table1 %>% 
+table1 |> 
   mutate(rate = cases / population * 10000)
 
 # Visualize cases over time
@@ -512,16 +512,16 @@ ggplot(table1, aes(year, cases)) +
   geom_point(aes(colour = country))
 ```
 
-### Spread and Gather
+### Pivoting
 
 Unfortunately, most of the data you will find in the "wild" is not tidy. So, we need tools to help us tidy unruly data.
 
-The main tools in `tidyr` are the ideas of `spread()` and `gather()`. `gather()` "lengthens" our data, increasing the number of rows and decreasing the number of columns. `spread()` does the opposite, increasing the number of columns and decreasing the number of rows.
+The main tools in `tidyr` are the ideas of `pivot_longer()` and `pivot_wider()`. As the names imply, `pivot_longer()` "lengthens" our data, increasing the number of rows and decreasing the number of columns. `pivot_wider` does the opposite, increasing the number of columns and decreasing the number of rows.
 
 These two functions resolve one of two common problems:
 
-1. One variable might be spread across multiple columns. (`gather()`)
-2. One observation might be scattered across multiple rows. (`spread()`)
+1. One variable might be spread across multiple columns. (`pivot_longer()`)
+2. One observation might be scattered across multiple rows. (`pivot_wider()`)
 
 A common issue with data is when values are used as column names.
 
@@ -529,31 +529,32 @@ A common issue with data is when values are used as column names.
 table4a
 ```
 
-We can fix this using `gather()`.
+We can fix this using `pivot_longer()`.
 
-```{r}
-table4a %>%
-  gather(-country, key = "year", value = "cases")
+```{r, eval=FALSE}
+table4a |>
+  pivot_longer(-country, names_to = "year", values_to = "cases")
 ```
 
 Notice we specified with columns we wanted to consolidate by telling the function the column we *didn't* want to change (`-country`). We can use the `dplyr::select()` syntax here for specifying the columns to pivot.
 
 We can do the same thing with `table4b` and then **join** the databases together by specifying unique identifying attributes.
 
-```{r}
-table4a %>%
-  gather(-country, key = "year", value = "cases") %>%
-  left_join(table4b %>% gather(-country, key = "year", value = "population"))
+```{r, eval=FALSE}
+table4a |>
+  pivot_longer(-country, names_to = "year", values_to = "cases") |>
+  left_join(table4b |> pivot_longer(-country, names_to = "year", values_to = "population"))
 ```
 
-If, instead, variables don't have their own column, we can `spread()`.
+If, instead, variables don't have their own column, we can `pivot_wider()`.
 
-```{r}
+```{r, eval=FALSE}
 table2
 
-table2 %>%
-  spread(key = type, value = count)
+table2 |>
+  pivot_wider(names_from = type, values_from = count)
 ```
+
 
 ### Separating and Uniting
 
@@ -566,7 +567,7 @@ table3
 We need to split the `rate` column into the cases and population columns so that each value has its own cell. The function we will use is `separate()`. We need to specify the column, the value to split on ("/"), and the names of the new coumns.
 
 ```{r}
-table3 %>%
+table3 |>
   separate(rate, into = c("cases", "population"), sep = "/")
 ```
 
