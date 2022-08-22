@@ -15,6 +15,8 @@ library(ISLR)
 library(knitr)
 library(dplyr)
 library(tidyr)
+library(tidymodels)
+library(discrim)
 
 opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
 theme_set(theme_bw())
@@ -152,9 +154,14 @@ The basic intuition is that we seek estimates for $\beta_0$ and $\beta_1$ such t
 <br/><br/><br/><br/>
 
 ```{r}
-m1 <- glm(default ~ balance, family = "binomial", data = Default)
+logistic_spec <- logistic_reg()
 
-summary(m1)
+logistic_fit <- logistic_spec |>
+  fit(default ~ balance, family = "binomial", data = Default)
+
+logistic_fit |>
+  pluck("fit") |>
+  summary()
 ```
 
 ## Predictions
@@ -176,8 +183,12 @@ We now consider the problem of predicting a binary response using multiple predi
 Just as before, we can use maximum likelihood to estimate $\beta_0, \beta_1, \dots, \beta_p$.
 
 ```{r}
-m2 <- glm(default ~ ., family = "binomial", data = Default)
-summary(m2)
+logistic_fit2 <- logistic_spec |>
+  fit(default ~ ., family = "binomial", data = Default)
+
+logistic_fit2 |>
+  pluck("fit") |>
+  summary()
 ```
 
 
@@ -385,12 +396,20 @@ To classify a new value $X = x$, LDA plugs in estimates into $\delta_k(x)$ and c
 Let's perform LDA on the `Default` data set to predict if an individual will default on their CC payment based on balance and student status.
 
 ```{r, message = FALSE}
-library(MASS) # package containing lda function
-lda_fit <- lda(default ~ student + balance, data = Default)
-lda_fit
+lda_spec <- discrim_linear(engine = "MASS")
+
+lda_fit <- lda_spec |>
+  fit(default ~ student + balance, data = Default)
+
+lda_fit |>
+  pluck("fit")
 
 # training data confusion matrix
-table(predict(lda_fit)$class, Default$default)
+lda_fit |>
+  augment(new_data = Default) |>
+  group_by(default, .pred_class) |>
+  summarise(count = n())
+
 ```
 
 Why does the LDA classifier do such a poor job of classifying the customers who default?
