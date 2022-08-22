@@ -1,5 +1,5 @@
 ---
-title: "Tools: Git and GitHub"
+title: "Tools: Class RStudio Server"
 output:
   pagedown::html_paged:
     # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
