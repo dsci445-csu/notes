@@ -82,6 +82,8 @@ Using this coding, we could then fit a linear regression model to predict $Y$ on
 
 Using the dummy encoding, we can get a rough estimate of $P(\texttt{default} | X)$, but it is not guaranteed to be scaled correctly.
 
+\newpage
+
 # Logistic Regression
 
 Let's consider again the `default` variable which takes values `Yes` or `No`. Rather than modeling the response directly, logistic regression models the *probability* that $Y$ belongs to a particular category.
@@ -151,7 +153,7 @@ The coefficients $\beta_0$ and $\beta_1$ are unknown and must be estimated based
 
 The basic intuition is that we seek estimates for $\beta_0$ and $\beta_1$ such that the predicted probability $\hat{p}(x_i)$ of default for each individual corresponds as closely as possible to the individual's observed default status.
 
-<br/><br/><br/><br/>
+<br/>
 
 ```{r}
 logistic_spec <- logistic_reg()
@@ -178,7 +180,7 @@ In contrast, the predicted probability of default for an individual with a balan
 
 We now consider the problem of predicting a binary response using multiple predictors. By analogy with the extension from simple to multiple linear regression, 
 
-<br/><br/><br/><br/><br/><br/>
+<br/><br/><br/>
 
 Just as before, we can use maximum likelihood to estimate $\beta_0, \beta_1, \dots, \beta_p$.
 
@@ -191,9 +193,6 @@ logistic_fit2 |>
   summary()
 ```
 
-
-\newpage
-
 By substituting estimates for the regression coefficients from the model summary, we can make predictions. For example, a student with a credit card balance of $1,500 and an income of $40,000 has an estimated probability of default of 
 
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
@@ -205,6 +204,8 @@ A non-student with the same balance and income has an estimated probability of d
 ## Logistic Regression for $> 2$ Classes
 
 We sometimes which to classify a response variable that has more than two classes. There are multi-class extensions to logistic regression ("multinomial regression"), but there are far more popular methods of performing this. 
+
+\newpage
 
 # LDA
 
@@ -385,7 +386,7 @@ In the case of $p > 1$ predictors, the LDA classifier assumes the observations i
 
 Plugging in the density function for the $k$th class, results in a Bayes classifier
 
-<br/><br/><br/><br/><br/><br/>
+<br/><br/><br/>
 
 Once again, we need to estimate the unknown parameters $\boldsymbol \mu_1, \dots, \boldsymbol \mu_K, \pi_1, \dots, \pi_K, \boldsymbol \Sigma$. 
 
@@ -407,21 +408,23 @@ lda_fit |>
 # training data confusion matrix
 lda_fit |>
   augment(new_data = Default) |>
-  group_by(default, .pred_class) |>
-  summarise(count = n())
+  conf_mat(truth = default, estimate = .pred_class)
 
 ```
 
 Why does the LDA classifier do such a poor job of classifying the customers who default?
 
-<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/><br/><br/>
 
 ```{r}
-table(predict(lda_fit)$posterior[, "Yes"] > 0.2, Default$default)
+lda_fit |>
+  augment(new_data = Default) |>
+  mutate(pred_lower_cutoff = factor(ifelse(.pred_Yes > 0.2, "Yes", "No"))) |>
+  conf_mat(truth = default, estimate = pred_lower_cutoff)
 ```
 
 
-```{r, echo = FALSE, cache = TRUE, fig.height=2}
+```{r, echo = FALSE, cache = TRUE, fig.height=1.95}
 get_errors <- function(model, y, tau) {
   conf <- table(predict(model)$posterior[, 2] > tau, y)
 
@@ -432,7 +435,7 @@ get_errors <- function(model, y, tau) {
 
 res <- data.frame()
 for(tau in seq(0.0001, 0.5, by = .0001)) {
-  res <- rbind(res, data.frame(threshold = tau, get_errors(lda_fit, Default$default, tau)))
+  res <- rbind(res, data.frame(threshold = tau, get_errors(lda_fit$fit, Default$default, tau)))
 }
 
 res %>%
