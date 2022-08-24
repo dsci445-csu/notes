@@ -76,6 +76,15 @@ lm_spec |>
   pluck("fit") |>
   summary()
 
+## --------------------------------------------------------------------------------------------------------------------------------
+rec_spec_interact <- recipe(sales ~ TV + radio, data = ads) |>
+  step_interact(~ TV:radio)
+
+lm_wf_interact <- workflow() |>
+  add_model(lm_spec) |>
+  add_recipe(rec_spec_interact)
+
+lm_wf_interact |> fit(ads)
 
 ## --------------------------------------------------------------------------------------------------------------------------------
 ggplot(data = mpg, aes(displ, hwy)) +
@@ -89,6 +98,15 @@ lm_spec |>
   fit(hwy ~ displ + I(displ^2), data = mpg) |>
   pluck("fit") |> summary()
 
+## --------------------------------------------------------------------------------------------------------------------------------
+rec_spec_pow2 <- recipe(hwy ~ displ, data = mpg) |>
+  step_mutate(displ2 = displ^2)
+
+lm_wf_pow2 <- workflow() |>
+  add_model(lm_spec) |>
+  add_recipe(rec_spec_pow2)
+
+lm_wf_pow2 |> fit(mpg)
 
 ## ---- fig.show="hold", out.width = "33%", fig.height = 7-------------------------------------------------------------------------
 set.seed(445) #reproducibility
