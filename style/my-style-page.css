@@ -21,6 +21,11 @@
   color: red;
 }
 
+.hidden {
+  color: transparent;
+  font-size: 0;
+}
+
 .yourturn {
   color: blue;
   font-size: 2em;
