@@ -364,10 +364,9 @@ x <- rnorm(100, 4, 1) # pick some x values
 y <- 0.5 + x + 2*x^2 + rnorm(100, 0, 2) # true relationship
 df <- data.frame(x = x, y = y) # data frame of training data
 
-knn_spec <- nearest_neighbor(mode = "regression")
 for (k in seq(2, 10, by = 2)) {
-  knn_spec |>
-    fit(y ~ x, data = df, neighbors = k) |>
+  nearest_neighbor(mode = "regression", neighbors = k) |>
+    fit(y ~ x, data = df) |>
     augment(new_data = df) |>
     ggplot() +
     geom_point(aes(x, y)) +
