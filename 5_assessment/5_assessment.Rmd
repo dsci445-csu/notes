@@ -15,6 +15,7 @@ library(ISLR)
 library(knitr)
 library(dplyr)
 library(tidyr)
+library(tidymodels)
 
 opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
 theme_set(theme_bw())
@@ -73,40 +74,41 @@ f <- function(x) 20 + .0001*(-1*(x - 20) - 2*(x - 70)^2 - (x - 50)^3)
 train <- data.frame(x = x, y = f(x) + rnorm(n, 0, 2))
 
 ## fit models of varying levels of flexibility
-m0 <- lm(y ~ x, data = train)
-m1 <- smooth.spline(train$x, train$y, df = 6)
-m2 <- smooth.spline(train$x, train$y, df = 25)
+lm_spec <- linear_reg()
+m0 <- lm_spec |> fit(y ~ x, data = train)
+m1 <- workflow() |> add_recipe(recipe(y ~ x, data = train) |> step_ns(x, deg_free = 6)) |> add_model(lm_spec) |> fit(data = train)
+m2 <- workflow() |> add_recipe(recipe(y ~ x, data = train) |> step_ns(x, deg_free = 25)) |> add_model(lm_spec) |> fit(data = train)
 
 ## get training MSE
-data.frame(model = "Linear Regression", df = 2, pred = m0$fitted.values, true = train$y) %>%
-  bind_rows(data.frame(model = "Smoothing Spline", df = 6, pred = predict(m1, x)$y, true = train$y)) %>%
-  bind_rows(data.frame(model = "Smoothing Spline", df = 25, pred = predict(m2, x)$y, true = train$y)) %>%
-  mutate(SE = (pred - true)^2) %>%
-  group_by(model, df) %>%
+m0 |> augment(new_data = train) |> mutate(model = "Linear Regression", df = 2) |>
+  bind_rows(m1 |> augment(new_data = train) |> mutate(model = "Smoothing Spline", df = 6)) |>
+  bind_rows(m2 |> augment(new_data = train) |> mutate(model = "Smoothing Spline", df = 25)) |>
+  mutate(SE = (.pred - y)^2) |>
+  group_by(model, df) |>
   summarise(`Train MSE` = mean(SE)) -> mse
 
 ## plot predictions vs. training data
 ggplot() + 
   geom_point(aes(x, y), data = train) +
   geom_line(aes(x, f(x)), colour = "black") +
-  geom_abline(aes(intercept = m0$coefficients[1], slope = m0$coefficients[2]), colour = "blue") +
-  geom_line(aes(m1$x, m1$y), colour = "red") +
-  geom_line(aes(m2$x, m2$y), colour = "darkgreen")
+  geom_line(aes(x, .pred), colour = "blue", data = m0 |> augment(new_data = data.frame(x = seq(0, 100, length.out = 200)))) +
+  geom_line(aes(x, .pred), colour = "red", data = m1 |> augment(new_data = data.frame(x = seq(0, 100, length.out = 200)))) +
+  geom_line(aes(x, .pred), colour = "darkgreen", data = m2 |> augment(new_data = data.frame(x = seq(0, 100, length.out = 200))))
 
 ## generate test data
 test <- data.frame(x = runif(1000, 0, 100))
 test$y <- f(x) + rnorm(n, 0, 2)
 
 ## predictions for test data
-m0.pred <- predict(m0, test)
-m1.pred <- predict(m1, test$x)
-m2.pred <- predict(m2, test$x)
+m0.pred <- m0 |> augment(new_data = test)
+m1.pred <- m1 |> augment(new_data = test)
+m2.pred <- m2 |> augment(new_data = test)
 
 ## get test MSE
-data.frame(model = "Linear Regression", df = 2, pred = m0.pred, true = test$y) %>%
-  bind_rows(data.frame(model = "Smoothing Spline", df = 6, pred = m1.pred$y, true = test$y)) %>%
-  bind_rows(data.frame(model = "Smoothing Spline", df = 25, pred = m2.pred$y, true = test$y)) %>%
-  mutate(SE = (pred - true)^2) %>%
+m0.pred |> mutate(model = "Linear Regression", df = 2) |>
+  bind_rows(m1.pred |> mutate(model = "Smoothing Spline", df = 6)) |>
+  bind_rows(m2.pred |> mutate(model = "Smoothing Spline", df = 25)) |>
+  mutate(SE = (.pred - y)^2) %>%
   group_by(model, df) %>%
   summarise(`Test MSE` = mean(SE)) %>%
   left_join(mse) %>%
