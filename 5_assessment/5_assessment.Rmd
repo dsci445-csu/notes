@@ -190,32 +190,30 @@ We fit the model with a squared term $\texttt{displ}^2$, but we might be wonderi
 ```{r}
 ## get index of training observations
 # take 60% of observations as training and 40% for validation
-n <- nrow(mpg)
-trn <- seq_len(n) %in% sample(seq_len(n), round(0.6*n)) 
+mpg_val <- validation_split(mpg, prop = 0.6)
 
-## fit models
-m0 <- lm(hwy ~ displ, data = mpg[trn, ])
-m1 <- lm(hwy ~ displ + I(displ^2), data = mpg[trn, ])
-m2 <- lm(hwy ~ displ + I(displ^2) + I(displ^3), data = mpg[trn, ])
-m3 <- lm(hwy ~ displ + I(displ^2) + I(displ^3) + I(displ^4), data = mpg[trn, ])
+## models
+lm_spec <- linear_reg()
 
-## predict on validation set
-pred0 <- predict(m0, mpg[!trn, ])
-pred1 <- predict(m1, mpg[!trn, ])
-pred2 <- predict(m2, mpg[!trn, ])
-pred3 <- predict(m3, mpg[!trn, ])
+linear_recipe <- recipe(hwy ~ displ, data = mpg)
+quad_recipe <- linear_recipe |> step_mutate(displ2 = displ^2)
+cubic_recipe <- quad_recipe |> step_mutate(displ3 = displ^3)
+quart_recipe <- cubic_recipe |> step_mutate(displ4 = displ^4)
+
+m0 <- workflow() |> add_model(lm_spec) |> add_recipe(linear_recipe) |> fit_resamples(resamples = mpg_val)
+m1 <- workflow() |> add_model(lm_spec) |> add_recipe(quad_recipe) |> fit_resamples(resamples = mpg_val)
+m2 <- workflow() |> add_model(lm_spec) |> add_recipe(cubic_recipe) |> fit_resamples(resamples = mpg_val)
+m3 <- workflow() |> add_model(lm_spec) |> add_recipe(quart_recipe) |> fit_resamples(resamples = mpg_val)
 
 ## estimate test MSE
-true_hwy <-  mpg[!trn, ]$hwy # truth vector
-
-data.frame(terms = 2, model = "linear", true = true_hwy, pred = pred0) %>%
-  bind_rows(data.frame(terms = 3, model = "quadratic", true = true_hwy, pred = pred1)) %>%
-  bind_rows(data.frame(terms = 4, model = "cubic", true = true_hwy, pred = pred2)) %>%
-  bind_rows(data.frame(terms = 5, model = "quartic", true = true_hwy, pred = pred3)) %>% ## bind predictions together
-  mutate(se = (true - pred)^2) %>% # squared errors
-  group_by(terms, model) %>% # group by model
-  summarise(test_mse = mean(se)) %>% ## get test mse
-  kable() ## pretty table
+collect_metrics(m0) |> mutate(model = "linear") |>
+  bind_rows(collect_metrics(m1) |> mutate(model = "quadratic")) |>
+  bind_rows(collect_metrics(m2) |> mutate(model = "cubic")) |>
+  bind_rows(collect_metrics(m3) |> mutate(model = "quartic")) |> 
+  select(model, .metric, mean) |>
+  pivot_wider(names_from = .metric, values_from = mean) |>
+  select(-rsq) |>
+  kable()
 ```
 
 \newpage
@@ -224,37 +222,29 @@ data.frame(terms = 2, model = "linear", true = true_hwy, pred = pred0) %>%
 res <- data.frame() ## store results
 
 for(i in 1:10) { # repeat 10 times
-  trn <- seq_len(n) %in% sample(seq_len(n), round(0.9*n)) 
+  mpg_val <- validation_split(mpg, prop = 0.6)
 
-  ## fit models
-  m0 <- lm(hwy ~ displ, data = mpg[trn, ])
-  m1 <- lm(hwy ~ displ + I(displ^2), data = mpg[trn, ])
-  m2 <- lm(hwy ~ displ + I(displ^2) + I(displ^3), data = mpg[trn, ])
-  m3 <- lm(hwy ~ displ + I(displ^2) + I(displ^3) + I(displ^4), data = mpg[trn, ])
-  
-  ## predict on validation set
-  pred0 <- predict(m0, mpg[!trn, ])
-  pred1 <- predict(m1, mpg[!trn, ])
-  pred2 <- predict(m2, mpg[!trn, ])
-  pred3 <- predict(m3, mpg[!trn, ])
-  
-  ## estimate test MSE
-  data.frame(iter = i, terms = 2, model = "linear", true = mpg[!trn, ]$hwy, pred = pred0) %>%
-    bind_rows(data.frame(iter = i, terms = 3, model = "quadratic", true = mpg[!trn, ]$hwy, pred = pred1)) %>%
-    bind_rows(data.frame(iter = i, terms = 4, model = "cubic", true = mpg[!trn, ]$hwy, pred = pred2)) %>%
-    bind_rows(data.frame(iter = i, terms = 5, model = "quartic", true = mpg[!trn, ]$hwy, pred = pred3)) %>% ## bind predictions together
-    mutate(se = (true - pred)^2) %>% # squared errors
-    group_by(iter, terms, model) %>% # group by model
-    summarise(test_mse = mean(se)) -> test_mse
-  
-  res %>%
-    bind_rows(test_mse) -> res
+  m0 <- workflow() |> add_model(lm_spec) |> add_recipe(linear_recipe) |> fit_resamples(resamples = mpg_val)
+  m1 <- workflow() |> add_model(lm_spec) |> add_recipe(quad_recipe) |> fit_resamples(resamples = mpg_val)
+  m2 <- workflow() |> add_model(lm_spec) |> add_recipe(cubic_recipe) |> fit_resamples(resamples = mpg_val)
+  m3 <- workflow() |> add_model(lm_spec) |> add_recipe(quart_recipe) |> fit_resamples(resamples = mpg_val)
+
+## estimate test MSE
+collect_metrics(m0) |> mutate(model = "linear", terms = 2) |>
+  bind_rows(collect_metrics(m1) |> mutate(model = "quadratic", terms = 3)) |>
+  bind_rows(collect_metrics(m2) |> mutate(model = "cubic", terms = 4)) |>
+  bind_rows(collect_metrics(m3) |> mutate(model = "quartic", terms = 5)) |> 
+  select(model, terms, .metric, mean) |>
+  pivot_wider(names_from = .metric, values_from = mean) |>
+  select(-rsq) |>
+  mutate(iter = i) |>
+  bind_rows(res) -> res
 }
 
 res %>%
   mutate(iter = as.character(iter)) %>%
   ggplot() +
-  geom_line(aes(terms, test_mse, group = iter, colour = iter)) +
+  geom_line(aes(terms, rmse, group = iter, colour = iter)) +
   theme(legend.position = "none")
 ```
 
