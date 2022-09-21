@@ -592,11 +592,11 @@ expand.grid(x1 = seq(-6, 6, length.out = 500),
   data.frame() -> plot_dat
 
 ## knn plots for each k
-knn_spec <- nearest_neighbor(mode = "classification")
+
 for(k in c(1, 10, 100)) {
   ## fit knn
-  knn_spec |>
-    fit(class ~ ., data = train, neighbors = k) |>
+  nearest_neighbor(mode = "classification", neighbors = k) |>
+    fit(class ~ ., data = train) |>
     augment(new_data = plot_dat) |>
     ggplot() +
     geom_tile(aes(x1, x2, fill = .pred_class), alpha = 0.5) +
