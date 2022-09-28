@@ -15,6 +15,7 @@ library(ISLR)
 library(knitr)
 library(dplyr)
 library(tidyr)
+library(tidymodels)
 
 opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
 theme_set(theme_bw())
@@ -199,18 +200,40 @@ We can construct up to $p$ principal components, where the $2$nd principal compo
 pca.fit <- prcomp(Auto[, c("weight", "horsepower")]) ## pca
 lm.fit <- lm(horsepower ~ weight, data = Auto) ## for plot
 
-ggplot() +
+lm_spec <- linear_reg()
+lm_recipe <- recipe(horsepower ~ weight, data = Auto)
+pca_recipe <- lm_recipe |>
+  step_normalize(all_numeric()) |>
+  step_pca(num_comp = 1)
+
+lm.fit <- workflow() |>
+  add_model(lm_spec) |>
+  add_recipe(lm_recipe) |>
+  fit(data = Auto)
+
+pcr.fit <- workflow() |>
+  add_model(lm_spec) |>
+  add_recipe(pca_recipe) |>
+  fit(data = Auto)
+
+
+lm.fit |>
+  tidy() |>
+  select(term, estimate) |>
+  pivot_wider(names_from = term, values_from = estimate) |>
+  ggplot() +
   geom_point(aes(weight, horsepower), data = Auto) +
-  geom_abline(aes(intercept = coef(lm.fit)[1], slope = coef(lm.fit)[2]), colour = "blue") +
+  geom_abline(aes(intercept = `(Intercept)`, slope = weight), colour = "blue") +
   theme(text = element_text(size = 20))
   
 
 ## PC Plot
-data.frame(pca.fit$x) %>%
+pca.fit |>
+  augment(new_data = Auto) |>
   ggplot() +
-  geom_point(aes(PC1, -PC2)) +
+  geom_point(aes(.fittedPC1, .fittedPC2)) +
   geom_hline(aes(yintercept = 0), colour = "blue") +
-  ylab("PC2") +
+  ylab("PC2") + xlab("PC1") +
   theme(text = element_text(size = 20))
 ```
 
@@ -291,13 +314,18 @@ What can go wrong in high dimensions?
 plot_fit <- function(n) {
   x <- rnorm(n)
   y <- 1 + 2*x + rnorm(n, 0, .5)
+  df <- data.frame(x, y)
   
-  lm_fit <- lm(y ~ x)
-  lm_coefs <- coef(lm_fit)
+  lm_spec <- linear_reg()
   
-  ggplot() +
-    geom_point(aes(x, y), colour = "red", size = 2) +
-    geom_abline(aes(intercept = lm_coefs[1], slope = lm_coefs[2]), colour = "blue") +
+  lm_spec |>
+    fit(y ~ x, data = df) |>
+    tidy() |>
+    select(term, estimate) |>
+    pivot_wider(names_from = term, values_from = estimate) |>
+    ggplot() +
+    geom_point(aes(x, y), colour = "red", size = 2, data = df) +
+    geom_abline(aes(intercept = `(Intercept)`, slope = x), colour = "blue") +
     theme(text = element_text(size = 30))
 }
 
@@ -314,19 +342,36 @@ add_random_predictors <- function(p) {
   
   x <- matrix(rnorm(n * p), nrow = n, ncol = p)
   y <- rnorm(n)
-  
-  lm_fit <- lm(y ~ x)
+  df <- data.frame(y, x) 
   
   test_x <- matrix(rnorm(n * p), nrow = n, ncol = p)
   test_y <- rnorm(n)
+  test_df <- data.frame(y, x) 
   
-  pred_y <- predict(lm_fit, newdata = data.frame(test_x))
-
+  lm_spec <- linear_reg()
+  lm_spec |>
+    fit(y ~ ., data = df) -> lm.fit
+  
+  lm.fit |>
+    augment(new_data = df) |>
+    mutate(resid_sq = .resid^2) |>
+    summarise(mse = mean(resid_sq)) |>
+    pull(mse) -> train_mse
+  
+  lm.fit |>
+    augment(new_data = test_df) |>
+    mutate(resid_sq = .resid^2) |>
+    summarise(mse = mean(resid_sq)) |>
+    pull(mse) -> test_mse
+  
+  lm.fit |>
+    glance() |>
+    pull(r.squared) -> r.squared
+  
   return(data.frame(p = p, 
-                    R_squared = summary(lm_fit)$r.squared, 
-                    test_MSE = mean((test_y - pred_y)^2),
-                    train_MSE = mean(lm_fit$residuals^2)))
-  
+                    R_squared = r.squared, 
+                    test_MSE = test_mse,
+                    train_MSE = train_mse))
 }
 
 res <- data.frame()
