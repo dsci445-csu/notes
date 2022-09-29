@@ -156,6 +156,8 @@ For both the lasso and ridge regression, we need to select $\lambda$ (or the bud
 
 How?
 
+\newpage
+
 # Dimension Reduction Methods
 
 So far we have controlled variance in two ways:
@@ -196,7 +198,7 @@ We can construct up to $p$ principal components, where the $2$nd principal compo
 
 <br/><br/>
 
-```{r, echo = FALSE, fig.show = "hold", out.width="50%", fig.height = 4.5}
+```{r, echo = FALSE, fig.show = "hold", out.width="50%", fig.height = 4.3}
 pca.fit <- prcomp(Auto[, c("weight", "horsepower")]) ## pca
 lm.fit <- lm(horsepower ~ weight, data = Auto) ## for plot
 
@@ -216,7 +218,6 @@ pcr.fit <- workflow() |>
   add_recipe(pca_recipe) |>
   fit(data = Auto)
 
-
 lm.fit |>
   tidy() |>
   select(term, estimate) |>
@@ -231,7 +232,7 @@ lm.fit |>
 pca.fit |>
   augment(new_data = Auto) |>
   ggplot() +
-  geom_point(aes(.fittedPC1, .fittedPC2)) +
+  geom_point(aes(.fittedPC1, -.fittedPC2)) +
   geom_hline(aes(yintercept = 0), colour = "blue") +
   ylab("PC2") + xlab("PC1") +
   theme(text = element_text(size = 20))
@@ -288,9 +289,11 @@ The first PLS direction is computed,
 
 To identify the second PLS direction,
 
-<br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
 
 As with PCR, the number of partial least squares directions is chosen as a tuning parameter.
+
+\newpage
 
 # Considerations in High Dimensions
 
@@ -300,7 +303,7 @@ Most traditional statistical techniques for regression and classification are in
 
 In the past 25 years, new technologies have changed the way that data are collected in many fields. It is not commonplace to collect an almost unlimited number of feature measurements.
 
-<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 
 Data sets containing more features than observations are often referred to as *high-dimensional*.
 
@@ -310,14 +313,14 @@ What can go wrong in high dimensions?
 
 <br/><br/><br/><br/>
 
-```{r, echo = FALSE, fig.show='hold', out.width="50%", fig.height=4}
+```{r, echo = FALSE, fig.show='hold', out.width="50%", fig.height=3.8}
 plot_fit <- function(n) {
   x <- rnorm(n)
   y <- 1 + 2*x + rnorm(n, 0, .5)
   df <- data.frame(x, y)
-  
+
   lm_spec <- linear_reg()
-  
+
   lm_spec |>
     fit(y ~ x, data = df) |>
     tidy() |>
@@ -336,40 +339,40 @@ plot_fit(2)
 
 <br/><br/><br/><br/>
 
-```{r, echo = FALSE, fig.show='hold', fig.height=4}
+```{r, echo = FALSE, fig.show='hold', fig.height=3}
 add_random_predictors <- function(p) {
   n <- 20
-  
+
   x <- matrix(rnorm(n * p), nrow = n, ncol = p)
   y <- rnorm(n)
-  df <- data.frame(y, x) 
-  
+  df <- data.frame(y, x)
+
   test_x <- matrix(rnorm(n * p), nrow = n, ncol = p)
   test_y <- rnorm(n)
-  test_df <- data.frame(y, x) 
-  
+  test_df <- data.frame(y, x)
+
   lm_spec <- linear_reg()
   lm_spec |>
     fit(y ~ ., data = df) -> lm.fit
-  
+
   lm.fit |>
     augment(new_data = df) |>
     mutate(resid_sq = .resid^2) |>
     summarise(mse = mean(resid_sq)) |>
     pull(mse) -> train_mse
-  
+
   lm.fit |>
     augment(new_data = test_df) |>
     mutate(resid_sq = .resid^2) |>
     summarise(mse = mean(resid_sq)) |>
     pull(mse) -> test_mse
-  
+
   lm.fit |>
     glance() |>
     pull(r.squared) -> r.squared
-  
-  return(data.frame(p = p, 
-                    R_squared = r.squared, 
+
+  return(data.frame(p = p,
+                    R_squared = r.squared,
                     test_MSE = test_mse,
                     train_MSE = train_mse))
 }
@@ -389,7 +392,7 @@ res %>%
 
 \newpage
 
-Many of the methds that we've seen for fitting *less flexible* models work well in the high-dimension setting.
+Many of the methods that we've seen for fitting *less flexible* models work well in the high-dimension setting.
 
 <br/>
 
