@@ -15,7 +15,7 @@ library(ISLR)
 library(knitr)
 library(dplyr)
 library(tidyr)
-library(splines)
+library(tidymodels)
 
 opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
 theme_set(theme_bw())
@@ -55,37 +55,48 @@ head(Wage, 4) %>% knitr::kable(row.names = FALSE)
 ```
 <br/><br/><br/>
 ```{r, echo = FALSE, fig.show='hold', out.width='50%', fig.height=6}
-df <- Wage[, c("age", "wage")] %>%
+df <- Wage[, c("age", "wage")] |>
   mutate(c1 = as.numeric(age >= 30 & age < 60),
-         c2 = as.numeric(age >= 60)) %>%
+         c2 = as.numeric(age >= 60)) |>
   select(-age)
 
-m0 <- lm(wage ~ ., data = df)
-interval <- predict(m0, newdata = df, interval = 'confidence') %>% data.frame()
+lm_spec <- linear_reg()
 
-ggplot() +
+lm_spec |>
+  fit(wage ~ ., data = df) -> m0
+
+interval <- predict(m0, new_data = df, type = "conf_int")
+
+m0 |>
+  augment(new_data = df) |>
+  ggplot() +
   geom_point(aes(age, wage), alpha = .3, data = Wage) +
-  geom_ribbon(aes(x = Wage$age, ymin = interval$lwr, ymax = interval$upr), fill = "red", alpha = .2) +
-  geom_line(aes(Wage$age, m0$fitted.values), colour = "red", size = 2) +
+  geom_ribbon(aes(x = Wage$age, ymin = interval$.pred_lower, ymax = interval$.pred_upper), fill = "red", alpha = .2) +
+  geom_line(aes(Wage$age, .pred), colour = "red", size = 2) +
   theme(text = element_text(size = 30))
   
-df2 <- Wage[, c("age", "wage")] %>%
+df2 <- Wage[, c("age", "wage")] |>
   mutate(c1 = as.numeric(age >= 30 & age < 60),
          c3 = as.numeric(age >= 60),
-         high_wage = wage > 250) %>%
+         high_wage = wage > 250) |>
+  mutate(high_wage = factor(high_wage)) |>
   select(-age, -wage)
 
-m1 <- glm(high_wage ~ ., family = "binomial", data = df2)
-interval <- predict(m1, newdata = df2, type = "response", se.fit = TRUE) %>% data.frame()
+logistic_spec <- logistic_reg()
 
-ggplot() +
-  geom_ribbon(aes(x = Wage$age, ymin = interval$fit - 1.96*interval$se.fit, ymax = interval$fit + 1.96*interval$se.fit), fill = "red", alpha = .2) +
-  geom_line(aes(Wage$age, m1$fitted.values), colour = "red", size = 2) +
+m1 <- logistic_spec |>
+  fit(high_wage ~ ., data = df2)
+
+interval <- predict(m1, new_data = df2, type = "conf_int")
+
+m1 |>
+  augment(new_data = df2) |>
+  ggplot() +
+  geom_ribbon(aes(x = Wage$age, ymin = interval$.pred_lower_TRUE, ymax = interval$.pred_upper_TRUE), fill = "red", alpha = .2) +
+  geom_line(aes(Wage$age, .pred_TRUE), colour = "red", size = 2) +
   xlab("age") +
   ylab("Pr(wage > 250 | age)") +
   theme(text = element_text(size = 30))
-
-  
 ```
 
 \newpage
@@ -161,38 +172,64 @@ A degree-$d$ spline is <br/><br/>
 ```{r, fig.show='hold', out.width='33%', fig.height=5, echo = FALSE}
 Wage_small <- Wage[sample(1:nrow(Wage), 100),]
 
-spline_cubic <- lm(wage ~ bs(age, knots = c(50), degree = 3), data = Wage_small)
-
 df3 <- Wage_small[, c("age", "wage")] %>%
   mutate(age_low = age*(age < 50),
          age_high = age*(age >= 50)) %>%
   select(-age)
-cts_piecewise_cubic <- lm(wage ~ poly(age_low, 3) + poly(age_high, 3), data = df3)
 
-piecewise_cubic1 <- lm(wage ~ poly(age, 3), data = Wage_small %>% filter(age < 50))
-piecewise_cubic2 <- lm(wage ~ poly(age, 3), data = Wage_small %>% filter(age >= 50))
+cubic_spline_rec <- recipe(wage ~ age, data = Wage_small) |>
+  step_bs(age, degree = 3, options = list(knots = c(50)))
+
+cts_piecewise_cubic_rec <- recipe(wage ~ age_low + age_high, data = df3) |>
+  step_poly(starts_with("age"), degree = 3)
+
+piecewise_cubic_rec <- recipe(wage ~ age, data = Wage_small) |>
+  step_poly(age, degree = 3)
+
+spline_cubic <- workflow() |>
+  add_model(lm_spec) |>
+  add_recipe(cubic_spline_rec) |>
+  fit(data = Wage_small)
+
+cts_piecewise_cubic <- workflow() |>
+  add_model(lm_spec) |>
+  add_recipe(cts_piecewise_cubic_rec) |>
+  fit(data = df3)
+
+piecewise_cubic1 <- workflow() |>
+  add_model(lm_spec) |>
+  add_recipe(piecewise_cubic_rec) |>
+  fit(data = Wage_small %>% filter(age < 50))
+piecewise_cubic2 <- workflow() |>
+  add_model(lm_spec) |>
+  add_recipe(piecewise_cubic_rec) |>
+  fit(data = Wage_small %>% filter(age >= 50))
 
 x1s <- data.frame(age = seq(min(Wage_small$age), 50))
 x2s <- data.frame(age = seq(50, max(Wage_small$age)))
-y1s <- predict(piecewise_cubic1, newdata = x1s)
-y2s <- predict(piecewise_cubic2, newdata = x2s)
+y1s <- predict(piecewise_cubic1, new_data = x1s)
+y2s <- predict(piecewise_cubic2, new_data = x2s)
 
 ggplot() +
   geom_point(aes(age, wage), alpha = .3, data = Wage_small) +
-  geom_line(aes(x1s$age, y1s), colour = "red", size = 2) +
-  geom_line(aes(x2s$age, y2s), colour = "red", size = 2) +
+  geom_line(aes(x1s$age, y1s$.pred), colour = "red", size = 2) +
+  geom_line(aes(x2s$age, y2s$.pred), colour = "red", size = 2) +
   geom_vline(aes(xintercept = 50), lty = 2) +
   theme(text = element_text(size = 30))
 
-ggplot() +
+cts_piecewise_cubic |>
+  augment(new_data = df3) |>
+  ggplot() +
   geom_point(aes(age, wage), alpha = .3, data = Wage_small) +
-  geom_line(aes(Wage_small$age, cts_piecewise_cubic$fitted.values), colour = "red", size = 2) +
+  geom_line(aes(Wage_small$age, .pred), colour = "red", size = 2) +
   geom_vline(aes(xintercept = 50), lty = 2) +
   theme(text = element_text(size = 30))
 
-ggplot() +
-  geom_point(aes(age, wage), alpha = .3, data = Wage_small) +
-  geom_line(aes(Wage_small$age, spline_cubic$fitted.values), colour = "red", size = 2) +
+spline_cubic |>
+  augment(new_data = Wage_small) |>
+  ggplot() +
+  geom_point(aes(age, wage), alpha = .3) +
+  geom_line(aes(age, .pred), colour = "red", size = 2) +
   geom_vline(aes(xintercept = 50), lty = 2) +
   theme(text = element_text(size = 30))
 
@@ -230,16 +267,33 @@ How many knots should we use?
 <br/><br/><br/>
 
 ```{r, echo = FALSE}
-spline_fit <- lm(wage ~ ns(age, df = 15), data = Wage)
-poly_fit <- lm(wage ~ poly(age, 15), data = Wage)
+spline_15_rec <- recipe(wage ~ age, data = Wage) |>
+  step_ns(age, deg_free = 15)
 
-xs <- seq(16, 81)
+poly_15_rec <- recipe(wage ~ age, data = Wage) |>
+  step_poly(age, degree = 15)
 
-ggplot() +
+
+spline_fit <- workflow() |>
+  add_model(lm_spec) |>
+  add_recipe(spline_15_rec) |>
+  fit(data = Wage)
+  
+poly_fit <- workflow() |>
+  add_model(lm_spec) |>
+  add_recipe(poly_15_rec) |>
+  fit(data = Wage)
+
+xs <- data.frame(age = seq(16, 81))
+
+spline_fit |>
+  augment(new_data = xs) |>
+  rename(.pred_spline = .pred) |>
+  left_join(poly_fit |> augment(new_data = xs)) |>
+  ggplot() +
   geom_point(aes(age, wage), alpha = .3, data = Wage) +
-  geom_line(aes(xs, predict(spline_fit, data.frame(age = xs))), colour = "red") +
-  geom_line(aes(xs, predict(poly_fit, data.frame(age = xs))), colour = "blue")
-
+  geom_line(aes(age, .pred_spline), colour = "red") +
+  geom_line(aes(age, .pred), colour = "blue")
 ```
 
 
