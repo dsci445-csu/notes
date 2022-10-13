@@ -320,8 +320,6 @@ Example: Consider the Wage data.
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 
 ```{r, echo = FALSE, fig.show='hold', out.width='33%', fig.height = 6}
-library(gam)
-
 # plot function
 plot_f <- function(fit) {
   preplot_obj <- gam:::preplot.Gam(fit)
@@ -344,8 +342,57 @@ plot_f <- function(fit) {
   }
 }
 
-gam_fit <- gam(wage ~ ns(year, df = 4) + ns(age, df = 5) + education, data = Wage)
-plot_f(gam_fit)
+
+plot_gam <- function(wf_fit, ns_x_vars, raw_x_vars) {
+  fit <- extract_fit_parsnip(wf_fit)
+  rec <- extract_preprocessor(wf_fit)
+  
+  df <- rec$template
+  
+  
+}
+gam_rec <- recipe(wage ~ age + year + education, data = Wage) |>
+  step_ns(year, deg_free = 4) |>
+  step_ns(age, deg_free = 5)
+
+workflow() |>
+  add_model(lm_spec) |>
+  add_recipe(gam_rec) |>
+  fit(data = Wage) -> gam_fit
+
+gam_fit |>
+  augment(new_data = Wage) -> gam_pred
+
+gam_rec |> 
+  prep() |> 
+  bake(new_data = Wage) |> 
+  select(starts_with("age")) |>
+  as.matrix() -> col_ns_mat
+
+tidy(gam_fit) |>
+  select(estimate, term) |>
+  pivot_wider(names_from = term, values_from = estimate) |>
+  as.matrix() -> gam_ests
+
+tidy(gam_fit) |>
+  mutate(ci_lower = estimate - 2*std.error) |>
+  select(term, ci_lower) |>
+  pivot_wider(names_from = term, values_from = ci_lower) |>
+  as.matrix() -> gam_ests_lower
+
+tidy(gam_fit) |>
+  mutate(ci_upper = estimate + 2*std.error) |>
+  select(term, ci_upper) |>
+  pivot_wider(names_from = term, values_from = ci_upper) |>
+  as.matrix() -> gam_ests_upper
+
+age_ns <- age_ns_mat %*% gam_ests[grepl("age", colnames(gam_ests))]
+age_ns_lower <- age_ns_mat %*% gam_ests_lower[grepl("age", colnames(gam_ests_lower))]
+age_ns_upper <- age_ns_mat %*% gam_ests_lower[grepl("age", colnames(gam_ests_upper))]
+
+
+ggplot() +
+  
 
 ```
 
