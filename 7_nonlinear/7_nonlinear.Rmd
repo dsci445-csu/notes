@@ -27,12 +27,13 @@ So far we have mainly focused on linear models.
 
 <br/><br/><br/><br/><br/><br/>
 
-Previously, we have seen we can improve upon least squares using ride regression, the lasso, principal components regression, and more.
+Previously, we have seen we can improve upon least squares using ridge regression, the lasso, principal components regression, and more.
 
 <br/>
 
 Through simple and more sophisticated extensions of the linear model, we can relax the linearity assumption while still maintiaining as much interpretability as possible.
 
+\newpage
 
 # Step Functions
 
@@ -103,7 +104,7 @@ m1 |>
 
 # Basis Functions
 
-Polynomial and piecewise-constant regression models are in face special cases of a *basis function approach*.
+Polynomial and piecewise-constant regression models are in fact special cases of a *basis function approach*.
 
 **Idea:** <br/><br/><br/><br/>
 
@@ -117,7 +118,7 @@ Note that the basis functions are fixed and known.
 
 We can think of this model as a standard linear model with predictors defined by the basis functions and use least squares to estimate the unknown regression coefficients.
 
-<br/><br/>
+\newpage
 
 # Regression Splines
 
@@ -139,9 +140,9 @@ A pieacewise cubic with a single knot at point $c$ takes the form
 
 Using more knots leads to a more flexible piecewise polynomial.
 
-<br/><br/><br/>
+<br/><br/>
 
-In general, we place  $K$ knots throughout the range of $X$ and fit $K + 1$ polynomial regression models.
+In general, we place  $L$ knots throughout the range of $X$ and fit $L + 1$ polynomial regression models.
 
 \newpage
 
@@ -169,7 +170,7 @@ The fit with continuity and 2 smoothness contraints is called a *spline*.
 
 A degree-$d$ spline is <br/><br/>
 
-```{r, fig.show='hold', out.width='33%', fig.height=5, echo = FALSE}
+```{r, fig.show='hold', out.width='33%', fig.height=4.5, echo = FALSE}
 Wage_small <- Wage[sample(1:nrow(Wage), 100),]
 
 df3 <- Wage_small[, c("age", "wage")] %>%
@@ -239,7 +240,7 @@ spline_cubic |>
 
 ## Spline Basis Representation
 
-Fitting the spline regression model is more complex than the piecewise polynomial regression. We need to fit a degree $d$ piecewise polynomial and also constrain it and it's $d - 1$ derivatives to be continuous at the knots.
+Fitting the spline regression model is more complex than the piecewise polynomial regression. We need to fit a degree $d$ piecewise polynomial and also constrain it and its $d - 1$ derivatives to be continuous at the knots.
 
 <br/><br/><br/><br/><br/>
 
@@ -247,10 +248,9 @@ The most direct way to represent a cubic spline is to start with the basis for a
 
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 
-Unfortunately, splines can have high variance at the outer range of the predictors. One solution is to add *boundary contraints*.
+Unfortunately, splines can have high variance at the outer range of the predictors. One solution is to add *boundary constraints*.
 
 \newpage
-
 
 ## Choosing the Knots
 
@@ -266,7 +266,7 @@ How many knots should we use?
 
 <br/><br/><br/>
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.height=2.2}
 spline_15_rec <- recipe(wage ~ age, data = Wage) |>
   step_ns(age, deg_free = 15)
 
@@ -341,58 +341,12 @@ plot_f <- function(fit) {
     print(p)
   }
 }
+ 
+lm_spec |>
+  fit(wage ~ splines::ns(age, 4) + splines::ns(year, 5) + education, data = Wage) -> gam_fit
 
-
-plot_gam <- function(wf_fit, ns_x_vars, raw_x_vars) {
-  fit <- extract_fit_parsnip(wf_fit)
-  rec <- extract_preprocessor(wf_fit)
-  
-  df <- rec$template
-  
-  
-}
-gam_rec <- recipe(wage ~ age + year + education, data = Wage) |>
-  step_ns(year, deg_free = 4) |>
-  step_ns(age, deg_free = 5)
-
-workflow() |>
-  add_model(lm_spec) |>
-  add_recipe(gam_rec) |>
-  fit(data = Wage) -> gam_fit
-
-gam_fit |>
-  augment(new_data = Wage) -> gam_pred
-
-gam_rec |> 
-  prep() |> 
-  bake(new_data = Wage) |> 
-  select(starts_with("age")) |>
-  as.matrix() -> col_ns_mat
-
-tidy(gam_fit) |>
-  select(estimate, term) |>
-  pivot_wider(names_from = term, values_from = estimate) |>
-  as.matrix() -> gam_ests
-
-tidy(gam_fit) |>
-  mutate(ci_lower = estimate - 2*std.error) |>
-  select(term, ci_lower) |>
-  pivot_wider(names_from = term, values_from = ci_lower) |>
-  as.matrix() -> gam_ests_lower
-
-tidy(gam_fit) |>
-  mutate(ci_upper = estimate + 2*std.error) |>
-  select(term, ci_upper) |>
-  pivot_wider(names_from = term, values_from = ci_upper) |>
-  as.matrix() -> gam_ests_upper
-
-age_ns <- age_ns_mat %*% gam_ests[grepl("age", colnames(gam_ests))]
-age_ns_lower <- age_ns_mat %*% gam_ests_lower[grepl("age", colnames(gam_ests_lower))]
-age_ns_upper <- age_ns_mat %*% gam_ests_lower[grepl("age", colnames(gam_ests_upper))]
-
-
-ggplot() +
-  
+gam_fit$fit |>
+  plot_f()
 
 ```
 
@@ -417,8 +371,16 @@ Example: Consider the Wage data.
 <br/><br/><br/><br/><br/><br/>
 
 ```{r, echo = FALSE, fig.show='hold', out.width='33%', fig.height = 6}
-gam_fit_logit <- gam(I(wage > 250) ~ ns(year, df = 4) + ns(age, df = 5) + education, data = Wage, family = "binomial")
-plot_f(gam_fit_logit)
+Wage |>
+  mutate(high_wage = wage > 250) |>
+  mutate(high_wage = factor(high_wage)) -> Wage
+
+logistic_reg() |>
+  fit(high_wage ~ splines::ns(age, 4) + splines::ns(year, 5) + education, data = Wage) -> logistic_gam_fit
+
+logistic_gam_fit$fit |>
+  plot_f()
+
 ```
 
 
