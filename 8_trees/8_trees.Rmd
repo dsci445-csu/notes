@@ -15,7 +15,8 @@ library(ISLR)
 library(knitr)
 library(dplyr)
 library(tidyr)
-library(splines)
+library(tidymodels)
+library(rpart.plot)
 
 opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
 theme_set(theme_bw())
@@ -100,34 +101,53 @@ A strategy is to grow a very large tree $T_0$ and then *prune* it back to obtain
 Algorithm for building a regression tree:
 
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 
-```{r, echo = FALSE, fig.show='hold', out.width="33%", fig.height = 6}
-library(tree)
+```{r, echo = FALSE, fig.show='hold', out.width="33%", fig.height = 6, message = FALSE}
+tree_spec <- decision_tree() %>%
+  set_engine("rpart")
+
+reg_tree_spec <- tree_spec %>%
+  set_mode("regression")
 
 ## make validation set
-n <- nrow(Hitters)
-train <- sample(seq_len(n), round(n/2))
-test <- -train
+Hitters_split <- initial_split(Hitters)
+
+Hitters_train <- training(Hitters_split)
+Hitters_test <- testing(Hitters_split)
 
 ## fit regression tree
-tree_fit <- tree(Salary ~ ., data = Hitters, subset = train)
-plot(tree_fit)
-text(tree_fit, pretty = 0)
+reg_tree_fit <- fit(reg_tree_spec, Salary ~ ., Hitters_train)
+
+reg_tree_fit |>
+  extract_fit_engine() |>
+  rpart.plot()
 
 ## cross validation
-cv_tree <- cv.tree(tree_fit)
+reg_tree_wf <- workflow() |>
+  add_model(reg_tree_spec |> set_args(tree_depth = tune())) |>
+  add_formula(Salary ~ .)
 
-ggplot() +
-  geom_point(aes(cv_tree$size, cv_tree$dev)) +
-  geom_line(aes(cv_tree$size, cv_tree$dev)) +
-  theme(text = element_text(size = 30))
+Hitters_fold <- vfold_cv(Hitters_train, v = 10)
+
+param_grid <- grid_regular(tree_depth(range = c(1, 8)), levels = 8)
+
+tune_res <- reg_tree_wf |>
+  tune_grid(resamples = Hitters_fold, grid = param_grid)
+
+autoplot(tune_res, metric = "rmse")
 
 ## pruned by CV
-prune_tree <- prune.tree(tree_fit, best = 3)
-plot(prune_tree)
-text(prune_tree, pretty = 0)
+best_depth <- select_best(tune_res, metric = "rmse")
+reg_tree_final <- finalize_workflow(reg_tree_wf, data.frame(tree_depth = 1.6))
+reg_tree_final_fit <- fit(reg_tree_final, data = Hitters_train)
+
+reg_tree_final_fit |>
+  extract_fit_engine() |>
+  rpart.plot()
 ```
+
+\newpage
 
 # Classification Trees
 
@@ -149,6 +169,8 @@ It turns out that classification error is not sensitive enough.
 
 When building a classification tree, either the Gini index or the entropy are typically used to evaluate the quality of a particular split.
 
+\newpage
+
 # Trees vs. Linear Models
 
 Regression and classification trees have a very different feel from the more classical approaches for regression and classification. 
@@ -160,6 +182,8 @@ Which method is better?
 <br/><br/><br/><br/>
 
 ## Advantages and Disadvantages of Trees
+
+\newpage
 
 # Bagging
 
@@ -199,6 +223,8 @@ There is a very straightforward way to estimate the test error of a bagged model
 
 ## Interpretation
 
+\newpage
+
 # Random Forests
 
 *Random forests* provide an improvement over bagged trees by a small tweak that decorrelates the trees.
@@ -213,7 +239,9 @@ In other words, in building a random forest, at each split in the tree, the algo
 
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 
-The main difference between bagging and random forests is the chouce of predictor subset size $m$.
+The main difference between bagging and random forests is the choice of predictor subset size $m$.
+
+\newpage
 
 # Boosting
 
@@ -225,7 +253,7 @@ While bagging involves creating multiple copies of the original training data se
 
 <br/><br/><br/><br/><br/><br/>
 
-Boosting does not involve boostrap sampling, instead each tree is fit on a modified version of the original data set.
+Boosting does not involve bootstrap sampling, instead each tree is fit on a modified version of the original data set.
 
 \newpage
 
