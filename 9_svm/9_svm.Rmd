@@ -10,12 +10,12 @@ output:
 
 ```{r echo = FALSE, message = FALSE}
 library(tidyverse)
+library(tidymodels)
 library(scales)
 library(ISLR)
 library(knitr)
 library(dplyr)
 library(tidyr)
-library(e1071)
 
 opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
 theme_set(theme_bw())
@@ -123,6 +123,8 @@ This problem can be solved efficiently, but the details are outside the scope of
 
 What happens when no separating hyperplane exists?
 
+\newpage
+
 # Support Vector Classifiers
 
 It's not always possible to separate training observations by a hyperplane. In fact, even if we can use a hyperplane to perfectly separate our training observations, it may not be desirable.
@@ -189,7 +191,7 @@ dat <- data.frame(rbind(rmvnorm(n, mean = c(-3, -3)),
                         rmvnorm(n, mean = c(3, 3))), 
                   y = factor(c(rep("a", n), rep("b", n), rep("a", n))))
 
-dat %>%
+dat |>
   ggplot() +
   geom_point(aes(X1, X2, colour = y, shape = y)) +
   theme(legend.position = "none")
@@ -228,27 +230,37 @@ Now suppose every time the inner product shows up in the SVM representation abov
 
 \newpage
 
-```{r, echo = FALSE}
-linear_fit <- svm(y ~ ., data = dat, kernel = "linear", scale = FALSE)
-poly_fit <- svm(y ~ ., data = dat, kernel = "polynomial", scale = FALSE, degree = 4)
-rad_fit <- svm(y ~ ., data = dat, kernel = "radial", scale = FALSE)
+```{r, echo = FALSE, message = FALSE}
+svm_linear_spec <- svm_poly(degree = 1) |>
+  set_mode("classification") |>
+  set_engine("kernlab", scaled = FALSE)
+shh <- capture.output(svm_linear_fit <- fit(svm_linear_spec, y ~ ., data = dat, options = list()))
 
-grid <- expand.grid(X1 = seq(-5, 5, length.out = 500),
-                    X2 = seq(-5, 5, length.out = 500))
+svm_poly_spec <- svm_poly(degree = 4) |>
+  set_mode("classification") |>
+  set_engine("kernlab", scaled = FALSE)
+svm_poly_fit <- fit(svm_poly_spec, y ~ ., data = dat)
 
-grid %>%
-  mutate(linear = predict(linear_fit, ., type = "response")) %>%
-  mutate(polynomial = predict(poly_fit, ., type = "response")) %>%
-  mutate(radial = predict(rad_fit, ., type = "response")) %>%
-  gather(kernel, pred, -X1, -X2) %>%
+svm_rad_spec <- svm_rbf() |>
+  set_mode("classification") |>
+  set_engine("kernlab", scaled = FALSE)
+svm_rad_fit <- fit(svm_rad_spec, y ~ ., data = dat)
+
+
+grid <- expand.grid(X1 = seq(-6, 6, length.out = 500),
+                    X2 = seq(-6, 6, length.out = 500))
+
+augment(svm_linear_fit, new_data = grid) |> mutate(kernel = "linear") |>
+  bind_rows(augment(svm_poly_fit, new_data = grid) |> mutate(kernel = "polynomial")) |>
+  bind_rows(augment(svm_rad_fit, new_data = grid) |> mutate(kernel = "radial")) |>
   ggplot() +
-  geom_tile(aes(X1, X2, fill = pred), alpha = .5) +
+  geom_tile(aes(X1, X2, fill = .pred_class), alpha = .5) +
   geom_point(aes(X1, X2, colour = y, shape = y), data = dat) +
   facet_grid(.~kernel) +
   theme(legend.position = "none")
 ```
 
-
+\newpage
 
 # SVMs with More than Two Classes
 
