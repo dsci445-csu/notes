@@ -1,5 +1,5 @@
 ---
-title: "Chapter 10: Usupervised Learning"
+title: "Chapter 10: Unsupervised Learning"
 output:
   pagedown::html_paged:
     # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
@@ -16,6 +16,7 @@ library(knitr)
 library(dplyr)
 library(tidyr)
 library(dendextend)
+library(tidymodels)
 
 
 opts_chunk$set(fig.height = 3, message = FALSE, warning = FALSE)
@@ -25,11 +26,13 @@ set.seed(445)
 ```
 
 
-![](https://imgs.xkcd.com/comics/tasks.png)
+![](https://thejenkinscomic.net/images/366.png)
 
-Credit: https://xkcd.com/1425/
+Credit: https://thejenkinscomic.net/?id=366
 
 This chapter will focus on methods intended for the setting in which we only have a set of features $X_1, \dots, X_p$ measured on $n$ observations.
+
+\newpage
 
 # The Challenge of Unsupervised Learning
 
@@ -52,6 +55,7 @@ It can be hard to assess the results obtained from unsupervised learning methods
 
 Techniques for unsupervised learning are of growing importance in a number of fields.
 
+\newpage
 
 # Principal Components Analysis
 
@@ -109,17 +113,19 @@ Once we have computed the principal components, we can plot them against each ot
 
 <br/>
 
-```{r, fig.height = 7}
+```{r, fig.height = 6}
 str(USArrests)
 
-pca <- prcomp(USArrests, center = TRUE, scale = TRUE) # get loadings
+USArrests_pca <- USArrests |>
+  prcomp(scale = TRUE, center = TRUE)
 
-summary(pca) # summary
+summary(USArrests_pca) # summary
 
-pca$rotation # principal components loading matrix
+tidy(USArrests_pca, matrix = "loadings") |> # principal components loading matrix
+  pivot_wider(names_from = PC, values_from = value)
 
 ## plot scores + directions
-biplot(pca)
+biplot(USArrests_pca)
 ```
 
 \newpage
@@ -132,13 +138,14 @@ We've already talked about how when PCA is performed, the varriables should be c
 
 This is in contrast to other methods we've seen before.
 
-<br/><br/><br/><br/>
+<br/><br/><br/>
 
 ```{r, fig.height = 5.5, echo = FALSE}
-pca_unscaled <- prcomp(USArrests, center = TRUE, scale = FALSE) # get loadings
+USArrests_pca_unscaled <- USArrests |>
+  prcomp(scale = FALSE, center = TRUE)
 
 ## plot scores + directions
-biplot(pca_unscaled)
+biplot(USArrests_pca_unscaled)
 ```
 
 \newpage
@@ -165,7 +172,7 @@ More generally, we are interested in knowing the *proportion of vriance explaine
 
 ## How Many Principal Components to Use
 
-In general, a $n times p$ matrix $\boldsymbol X$ has $\min(n - 1, p)$ distinctt principal components.
+In general, a $n \times p$ matrix $\boldsymbol X$ has $\min(n - 1, p)$ distinct principal components.
 
 <br/><br/>
 
@@ -178,12 +185,11 @@ We typically decide on the number of principal components required by examining 
 <br/><br/>
 
 ```{r, echo = FALSE}
-pca_sum <- summary(pca)$importance
-
-ggplot() +
-  geom_point(aes(1:ncol(pca_sum), pca_sum[2,])) +
-  geom_line(aes(1:ncol(pca_sum), pca_sum[2,])) +
-  xlab("Principal Component") + ylab("PVE")
+tidy(USArrests_pca, matrix = "eigenvalues") |>
+  ggplot(aes(PC, percent)) +
+  geom_line() +
+  geom_point() +
+  ylab("PVE")
 ```
 
 \newpage
@@ -199,6 +205,8 @@ Many statistical techniques can be easily adapted to use the $n \times M$ matrix
 <br/><br/><br/><br/>
 
 This can lead to *less noisy* results.
+
+\newpage
 
 # Clustering
 
@@ -257,21 +265,21 @@ K2 <- kmeans(X, 2)
 K3 <- kmeans(X, 3)
 K4 <- kmeans(X, 4)
 
-data.frame(X) %>%
+data.frame(X) |>
   ggplot() +
   geom_point(aes(X1, X2, colour = as.factor(K2$cluster)), size = 2) +
   theme(legend.position = "none", text = element_text(size = 30)) +
   ggtitle("K = 2") +
   xlab("") + ylab("")
 
-data.frame(X) %>%
+data.frame(X) |>
   ggplot() +
   geom_point(aes(X1, X2, colour = as.factor(K3$cluster)), size = 2) +
   theme(legend.position = "none", text = element_text(size = 30)) +
   ggtitle("K = 3") +
   xlab("") + ylab("")
 
-data.frame(X) %>%
+data.frame(X) |>
   ggplot() +
   geom_point(aes(X1, X2, colour = as.factor(K4$cluster)), size = 2) +
   theme(legend.position = "none", text = element_text(size = 30)) +
@@ -289,7 +297,7 @@ The $K$-means clustering procedure results from a simple and intuitive mathemati
 
 2. <br/><br/><br/><br/>
 
-**Idea:** <br/><br/><br/><br/>
+**Idea:** 
 
 \newpage
 
@@ -325,14 +333,14 @@ We will discuss *bottom-up* or *agglomerative* clustering.
 <br/>
 
 ```{r, echo = FALSE, fig.show='hold', out.width="50%", fig.height = 6}
-data.frame(X) %>%
+data.frame(X) |>
   ggplot() +
   geom_point(aes(X1, X2), size = 2) +
   theme(text = element_text(size = 30)) +
   xlab("") + ylab("")
 
-dist_mat <- dist(X)
-hc <- hclust(dist_mat)
+hc <- dist(X) |>
+  hclust()
 dend <- as.dendrogram(hc)
 
 plot(dend)
@@ -384,7 +392,7 @@ Then the algorithm proceeds iteratively.
 ```{r, echo = FALSE, fig.show='hold', out.width="50%", fig.height = 6}
 X_small <- mvtnorm::rmvnorm(10, c(0, 0))
 
-data.frame(X_small) %>%
+data.frame(X_small) |>
   ggplot() +
   geom_text(aes(X1, X2, label = 1:10), size = 4) +
   theme(text = element_text(size = 30)) +
@@ -403,7 +411,7 @@ One issue has not yet been addressed.
 
 <br/><br/><br/>
 
-How do we determine the dissimilarity between two clusters if one or bother of them contains multiple observations?
+How do we determine the dissimilarity between two clusters if one or both of them contains multiple observations?
 
 <br/><br/><br/><br/><br/>
 
@@ -413,7 +421,7 @@ How do we determine the dissimilarity between two clusters if one or bother of t
 
 3. <br/><br/><br/>
 
-4. <br/><br/><br/>
+4. 
 
 \newpage
 
