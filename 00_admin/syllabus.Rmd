@@ -1,6 +1,6 @@
 ---
 title: "DSCI445: Statistical Machine Learning"
-author: "Fall 2023"
+author: "Fall 2024"
 date: "http://dsci445-csu.github.io"
 output:
   pagedown::html_paged:
@@ -12,7 +12,7 @@ output:
 
 Dr. Andee Kaplan  
 Lectures/Labs: TTH 8am - 9:15am Natural Resources	Building 109  
-Office Hours: TH 1:30pm - 3:30pm Statistics Bulding 208  
+Office Hours: TH 3:00pm - 4:30pm Statistics Building 208  
 andee.kaplan@colostate.edu
 
 
@@ -26,14 +26,6 @@ By end of course, students will be able to:
 1. Choose and apply the appropriate learning methods to their data.
 1. Conduct well thought-out statistical machine learning experiments and interpret the results.
 1. Write technical reports describing their work.
-
-## COVID-19
-
-**Important information for students: All students are directed to report any COVID-19 symptoms to the university immediately, as well as exposures or positive test results from a medical provider or home test.** 
-
-If you suspect you have symptoms, or if you know you have been exposed to a positive person or have tested positive for COVID, (even with a home test), you are directed to fill out the COVID Reporter (https://covid.colostate.edu/reporter/). If you know or believe you have been exposed, including living with someone known to be COVID positive, or are symptomatic, it is important for the health of yourself and others that you complete the online COVID Reporter. Do not ask your instructor to report for you. If you do not have internet access to fill out the online COVID-19 Reporter, please call (970) 491-4600. You may also report concerns in your academic or living spaces regarding COVID exposures through the COVID Reporter. You will not be penalized in any way for reporting. When you complete the COVID Reporter for any reason, the CSU Public Health office is notified. Students who report symptoms or a positive antigen test through the COVID Reporter may be directed to get a PCR test through the CSU Health Network's medical services for students.
-
-For the latest information about the University's COVID resources and information, please visit the **CSU COVID-19 site**: https://covid.colostate.edu/.
 
 ## Prerequisites
 
@@ -57,11 +49,13 @@ For your homeworks, you are free to use any other language you like, but I may n
 
 All graded classwork must be fully **reproducible** and **readable** by the instructor and TA. In other words, we need to be able to run your code and have it produce the product you turned in and your turned in document must be legible by the grader. If this is not the case, it will be reflected in the grading. A copy of your homework will need to be turned in to https://canvas.colostate.edu and the corresponding document used to generate your homework will need to exist on the server for full credit.
 
-**Homework (70%)** Homework will be assigned bi-weekly. All homework assignments are due at **11:59pm on the due date**. Each homework assignment will receive equal weight in the final grade and the one lowest homework assignment grades will be dropped. Late work is not accepted except in rare cases (see Documented emergencies below).
+**Labs (5%)** Labs will be completed periodically in class. You will turn in what you completed in class on Canvas, due at **9:20am on lab days**. These will be graded for completion, not correctness. 
+
+**Homework (65%)** Homework will be assigned bi-weekly. All homework assignments are due at **11:59pm on the due date**. Each homework assignment will receive equal weight in the final grade and the one lowest homework assignment grades will be dropped. Late work is not accepted except in rare cases (see Documented emergencies below).
 
 **Project (30%)** There will be a final project that will consist of an analysis of real data using the tools learned in class (this can include participation in an online data science competition, e.g. Kaggle).
 
-You will write a paper and give an in-class presentation. More details will be announced later. 
+You will write a paper and give an in class presentation. More details will be announced later. 
 
 Grades will be assigned according to the following intervals:
 
@@ -80,9 +74,9 @@ Any grading dispute must be submitted in writing to me within one week after the
 
 ## Policy Regarding Academic Honesty
 
-Statisticians and data scientists need to have high ethical standards. Thus, I expect each of you to hold high ethical standards and to act with academic integrity in this class. If you have questions about what integrity means, please feel free to ask me. Behavior that will not be tolerated in this class includes turning in a copy of somebody else's homework or code as your own, copying from somebody's exam, or failure to cite sources.
+Statisticians and Data Scientists need to have high ethical standards. Thus, I expect each of you to hold high ethical standards and to act with academic integrity in this class. If you have questions about what integrity means, please feel free to ask me. Behavior that will not be tolerated in this class includes turning in a copy of somebody else's homework or code as your own, copying from somebody's exam, or failure to cite sources.
 
-This course adheres to the CSU Academic Integrity Policy as found on the Students' Responsibilities pages of the CSU General Catalog in the Student Conduct Code. Violations will result in zero points for the assignment as a minimum penalty. In addition, CSU policy requires instructors to report violations to CSU's Office of Conflict Resulution. 
+This course adheres to the CSU Academic Integrity Policy as found on the Students' Responsibilities pages of the CSU General Catalog in the Student Conduct Code. Violations will result in zero points for the assignment as a minimum penalty. In addition, CSU policy requires instructors to report violations to CSU's Office of Conflict Resolution. 
 
 ## Documented Emergencies
 
@@ -97,6 +91,12 @@ If you have a problem that will require you to miss a due date, please discuss t
 **CSU Disability Center** Located in the TILT building. Students with both permanent and temporary limitations and health conditions (physical and mental health) are eligible for support. If you need specific accommodations in this class, please meet with me outside of class to discuss your needs as early in the class as possible.
 
 **CSU TILT** The Institute for Learning and Teaching has programs to help students improve their study habits, reduce test anxiety, learn about academic integrity, and more.
+
+## Additional CSU Policies
+
+Linked page provides policies relevant to your courses and resources to help with various challenges you may encounter.
+
+![](../images/QRCodeSyllabusResources.png){ width=30% }
 
 ## Disclaimer
 
