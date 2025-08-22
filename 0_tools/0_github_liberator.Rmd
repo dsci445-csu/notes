@@ -56,7 +56,7 @@ output:
     
 1. Share your homeworks project with the instructor and grader.
 
-    a. Click top right Home button > Open project > DSCI445 > DSCI445.Rproj. Click homeworks/homeworks.Rproj to open the notes project.
+    a. Click top right Home button > Open project > DSCI445 > DSCI445.Rproj. Click homeworks/homeworks.Rproj to open the homeworks project.
 
     a. Click the drop down on the project (top right side) > Share Project...
     
