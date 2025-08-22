@@ -1,6 +1,6 @@
 ---
 title: "DSCI445: Statistical Machine Learning"
-author: "Fall 2024"
+author: "Fall 2025"
 date: "http://dsci445-csu.github.io"
 output:
   pagedown::html_paged:
@@ -11,8 +11,8 @@ output:
 ---
 
 Dr. Andee Kaplan  
-Lectures/Labs: TTH 8am - 9:15am Natural Resources	Building 109  
-Office Hours: TH 3:00pm - 4:30pm Statistics Building 208  
+Lectures/Labs: TTh 8:00am - 9:15am Natural Resources	Building 109  
+Office Hours: Th 12:30pm - 2:30pm Statistics Building 208  
 andee.kaplan@colostate.edu
 
 
@@ -78,6 +78,10 @@ Statisticians and Data Scientists need to have high ethical standards. Thus, I e
 
 This course adheres to the CSU Academic Integrity Policy as found on the Students' Responsibilities pages of the CSU General Catalog in the Student Conduct Code. Violations will result in zero points for the assignment as a minimum penalty. In addition, CSU policy requires instructors to report violations to CSU's Office of Conflict Resolution. 
 
+## Policy Regarding use of LLMs
+
+All assignments should be fully prepared by the student. Developing strong competencies in the skills associated with this course will prepare you for success in your degree pathway and, ultimately, a competitive career. Therefore, the use of LLMs (i.e., generative AI tools) to complete any aspect of assignments for this course are not permitted and will be treated as plagiarism. If you have questions about what constitutes a violation of this statement, please contact me.
+
 ## Documented Emergencies
 
 If you have a problem that will require you to miss a due date, please discuss this with me in advance if possible. I can grant a rare exception when the reason relates to severe and unavoidable medical or personal emergency. Documentation will be required. Things that typically are not an emergency: vacation, family reunions, ordinary work commitments, job seeking, or other voluntary events. Please schedule these so that they do not conflict with your classes.
@@ -94,9 +98,7 @@ If you have a problem that will require you to miss a due date, please discuss t
 
 ## Additional CSU Policies
 
-Linked page provides policies relevant to your courses and resources to help with various challenges you may encounter.
-
-![](../images/QRCodeSyllabusResources.png){ width=30% }
+CSU provides policies relevant to your courses and resources to help with various challenges you may encounter. Please see the [CSU website](https://col.st/2FA2g) for more details.
 
 ## Disclaimer
 

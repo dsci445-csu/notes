@@ -53,4 +53,24 @@ output:
     - Open "notes" project
     
     - Top right click "Git" tab > "Pull"
+    
+1. Share your homeworks project with the instructor and grader.
+
+    a. Click top right Home button > Open project > DSCI445 > DSCI445.Rproj. Click homeworks/homeworks.Rproj to open the notes project.
+
+    a. Click the drop down on the project (top right side) > Share Project...
+    
+        ```{r, echo=FALSE, out.width="25%"}
+        knitr::include_graphics("../images/share_project.png")
+        ```
+      
+    a. Click the drop down and add "dsci445instructors" to your project.
+    
+        ```{r, echo=FALSE, out.width="25%"}
+        knitr::include_graphics("../images/share_dropdown.png")
+        ```
+
+    This is how you **receive points** for reproducibility on your homework!
+
+
 
