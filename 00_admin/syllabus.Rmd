@@ -33,7 +33,7 @@ DSCI 320, DSCI 369 and STAT 341.
 
 ## Texts
 
-An Introduction to Statistical Learning with Applications in R (2017) by Gareth James, Daniela Witten, Trevor Hastie and Robert Tibshirani -- Available free here: http://faculty.marshall.usc.edu/gareth-james/ISL/
+An Introduction to Statistical Learning with Applications in R (2017) by Gareth James, Daniela Witten, Trevor Hastie and Robert Tibshirani -- Available free [here](https://static1.squarespace.com/static/5ff2adbe3fe4fe33db902812/t/6009dd9fa7bc363aa822d2c7/1611259312432/ISLR+Seventh+Printing.pdf).
 
 Optional Reference: The Elements of Statistical Learning: Data Mining, Inference, and Prediction (2009) by Trevor Hastie , Robert Tibshirani, and Jerome Friedman -- Available free here: https://web.stanford.edu/~hastie/ElemStatLearn/
 
@@ -88,17 +88,7 @@ If you have a problem that will require you to miss a due date, please discuss t
 
 ## Support Services Available
 
-[**CSU COVID-19 Recovery Page**](https://covidrecovery.colostate.edu) On our road to recovery during these unprecedented times, Colorado State University is committed to the health of our students, faculty and staff, as well as to the health of our university and our ability to continue to empower our community through our land-grant mission of academics, research and outreach.
-
-**CSU Health Network Counceling Services** A variety of services are offered (151 W. Lake St., Drop-in hours: Monday-Friday 9am-4pm). If you are having difficulty coping, are feeling depressed, or need other psychological assitance, please contact the counceling center.
-
-**CSU Disability Center** Located in the TILT building. Students with both permanent and temporary limitations and health conditions (physical and mental health) are eligible for support. If you need specific accommodations in this class, please meet with me outside of class to discuss your needs as early in the class as possible.
-
-**CSU TILT** The Institute for Learning and Teaching has programs to help students improve their study habits, reduce test anxiety, learn about academic integrity, and more.
-
-## Additional CSU Policies
-
-CSU provides policies relevant to your courses and resources to help with various challenges you may encounter. Please see the [CSU website](https://col.st/2FA2g) for more details.
+CSU provides policies relevant to your courses and resources to help with various challenges you may encounter. Please see https://col.st/2FA2g for more details.
 
 ## Disclaimer
 
