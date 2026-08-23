@@ -1,6 +1,6 @@
 ---
 title: "DSCI445: Statistical Machine Learning"
-author: "Fall 2025"
+author: "Fall 2026"
 date: "http://dsci445-csu.github.io"
 output:
   pagedown::html_paged:
@@ -12,7 +12,7 @@ output:
 
 Dr. Andee Kaplan  
 Lectures/Labs: TTh 8:00am - 9:15am Natural Resources	Building 109  
-Office Hours: Th 12:30pm - 2:30pm Statistics Building 208  
+Office Hours: TTh 9:30am - 10:30am Statistics Building 208  
 andee.kaplan@colostate.edu
 
 
@@ -49,9 +49,11 @@ For your homeworks, you are free to use any other language you like, but I may n
 
 All graded classwork must be fully **reproducible** and **readable** by the instructor and TA. In other words, we need to be able to run your code and have it produce the product you turned in and your turned in document must be legible by the grader. If this is not the case, it will be reflected in the grading. A copy of your homework will need to be turned in to https://canvas.colostate.edu and the corresponding document used to generate your homework will need to exist on the server for full credit.
 
-**Labs (5%)** Labs will be completed periodically in class. You will turn in what you completed in class on Canvas, due at **9:20am on lab days**. These will be graded for completion, not correctness. 
+**Labs (5%)** Labs will be completed periodically prior to class, due at **8:00am on lab days**. These will be graded for effort, not correctness. We will hold up to 30 minutes of class time to answer lab questions on the day they are due.
 
-**Homework (65%)** Homework will be assigned bi-weekly. All homework assignments are due at **11:59pm on the due date**. Each homework assignment will receive equal weight in the final grade and the one lowest homework assignment grades will be dropped. Late work is not accepted except in rare cases (see Documented emergencies below).
+**Homework (40%)** Homework will be assigned weekly. All homework assignments are due at **11:59pm on the due date**. Each homework assignment will receive equal weight in the final grade and the one lowest homework assignment grades will be dropped. Late work is not accepted except in rare cases (see Documented emergencies below).
+
+**Midterm Exam (25%)** We will have one midterm exam in class on October 15, 2026 (subject to change).
 
 **Project (30%)** There will be a final project that will consist of an analysis of real data using the tools learned in class (this can include participation in an online data science competition, e.g. Kaggle).
 

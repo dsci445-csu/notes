@@ -13,13 +13,13 @@
 
 
 
-<meta name="author" content="Fall 2025" />
+<meta name="author" content="Fall 2026" />
 
 
 <meta name="description" content="DSCI445: Statistical Machine Learning">
 
 <script id="pandoc-meta" type="application/json">
-{"author":"Fall 2025","date":"<a href=\"http://dsci445-csu.github.io\" class=\"uri\">http://dsci445-csu.github.io</a>","newpage_html_class":"page-break-after","output":{"pagedown::html_paged":{"css":["../style/my-style-page.css","default-fonts","default-page","default"],"number_sections":false,"self_contained":true}},"title":"DSCI445: Statistical Machine Learning"}
+{"author":"Fall 2026","date":"<a href=\"http://dsci445-csu.github.io\" class=\"uri\">http://dsci445-csu.github.io</a>","newpage_html_class":"page-break-after","output":{"pagedown::html_paged":{"css":["../style/my-style-page.css","default-fonts","default-page","default"],"number_sections":false,"self_contained":true}},"title":"DSCI445: Statistical Machine Learning"}
 </script>
 
 <title>DSCI445: Statistical Machine Learning</title>
@@ -31751,7 +31751,7 @@ width: calc(var(--pagedjs-width) + 2 * var(--screen-pages-spacing));
       const anchors = content.querySelectorAll('a[href^="#"]:not([href*=":"])');
       for (const a of anchors) {
         const ref = a.getAttribute('href').replace(/^#/, '');
-        const element = content.getElementById(ref);
+        const element = content.getElementById(decodeURIComponent(ref));
         if (frontMatter.contains(element)) a.classList.add('front-matter-ref');
       }
 
@@ -31990,7 +31990,7 @@ width: calc(var(--pagedjs-width) + 2 * var(--screen-pages-spacing));
       const tocAnchors = content.querySelectorAll('.toc a[href^="#"]:not([href*=":"]');
       for (const anchor of tocAnchors) {
         const ref = anchor.getAttribute('href').replace(/^#/, '');
-        const element = content.getElementById(ref);
+        const element = content.getElementById(decodeURIComponent(ref));
         if (element.classList.contains('chapter')) {
           anchor.classList.add('chapter-ref');
         }
@@ -32376,7 +32376,7 @@ break-after: always;
 <div class="front-page">
 <div id="header" class="title-page">
 <h1 class="title">DSCI445: Statistical Machine Learning</h1>
-<h2 class="author">Fall 2025</h2>
+<h2 class="author">Fall 2026</h2>
 <h2 class="date"><a href="http://dsci445-csu.github.io" class="uri">http://dsci445-csu.github.io</a></h2>
 </div>
 </div>
@@ -32387,7 +32387,7 @@ break-after: always;
 <div class="main">
 <p>Dr. Andee Kaplan<br />
 Lectures/Labs: TTh 8:00am - 9:15am Natural Resources Building 109<br />
-Office Hours: Th 12:30pm - 2:30pm Statistics Building 208<br />
+Office Hours: TTh 9:30am - 10:30am Statistics Building 208<br />
 <a href="mailto:andee.kaplan@colostate.edu" class="email">andee.kaplan@colostate.edu</a></p>
 <div id="course-objectives" class="section level2">
 <h2>Course Objectives</h2>
@@ -32418,8 +32418,9 @@ Office Hours: Th 12:30pm - 2:30pm Statistics Building 208<br />
 <div id="classwork-and-grading" class="section level2">
 <h2>Classwork and Grading</h2>
 <p>All graded classwork must be fully <strong>reproducible</strong> and <strong>readable</strong> by the instructor and TA. In other words, we need to be able to run your code and have it produce the product you turned in and your turned in document must be legible by the grader. If this is not the case, it will be reflected in the grading. A copy of your homework will need to be turned in to <a href="https://canvas.colostate.edu" class="uri">https://canvas.colostate.edu</a> and the corresponding document used to generate your homework will need to exist on the server for full credit.</p>
-<p><strong>Labs (5%)</strong> Labs will be completed periodically in class. You will turn in what you completed in class on Canvas, due at <strong>9:20am on lab days</strong>. These will be graded for completion, not correctness.</p>
-<p><strong>Homework (65%)</strong> Homework will be assigned bi-weekly. All homework assignments are due at <strong>11:59pm on the due date</strong>. Each homework assignment will receive equal weight in the final grade and the one lowest homework assignment grades will be dropped. Late work is not accepted except in rare cases (see Documented emergencies below).</p>
+<p><strong>Labs (5%)</strong> Labs will be completed periodically prior to class, due at <strong>8:00am on lab days</strong>. These will be graded for effort, not correctness. We will hold up to 30 minutes of class time to answer lab questions on the day they are due.</p>
+<p><strong>Homework (40%)</strong> Homework will be assigned weekly. All homework assignments are due at <strong>11:59pm on the due date</strong>. Each homework assignment will receive equal weight in the final grade and the one lowest homework assignment grades will be dropped. Late work is not accepted except in rare cases (see Documented emergencies below).</p>
+<p><strong>Midterm Exam (25%)</strong> We will have one midterm exam in class on October 15, 2026 (subject to change).</p>
 <p><strong>Project (30%)</strong> There will be a final project that will consist of an analysis of real data using the tools learned in class (this can include participation in an online data science competition, e.g. Kaggle).</p>
 <p>You will write a paper and give an in class presentation. More details will be announced later.</p>
 <p>Grades will be assigned according to the following intervals:</p>
