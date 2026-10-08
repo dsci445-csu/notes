@@ -1,0 +1,46 @@
+---
+title: "DSCI445: Midterm Review"
+author: "Fall 2026"
+output:
+  pagedown::html_paged:
+    # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
+    css: ["../style/my-style-page.css", "default-fonts", "default-page", "default"]
+    self_contained: true
+    number_sections: false
+---
+
+## Model Assessment
+
+1. I hope your speech in Ohio went well last week and that you had a nice weekend. I wanted to reach out with a question/something I was hoping you could go over in more detail during the review session. I was hoping you could go over how to use cross-validation in classification problems and how we can apply it to optimize figuring out the best K for KNN.
+
+1. I am still a little confused about k-fold cross-validation for classification, specifically when we are using KNN. I understand the general idea, but I am not entirely sure what it means to "tune" the model in this context. "Tuning" comes up multiple times in the code, and I would appreciate going over what the process is actually doing.
+
+1. I would also like to go over the bias-variance tradeoff for the different cross-validation methods again, particularly LOOCV. I understand that LOOCV does not involve randomness in how the folds are selected, so I am confused about why LOOCV has higher variance than k-fold. My current understanding is that it has something to do with the fact that the training sets contain almost the same information entirely and that blows up the covariance, but I would really appreciate an explanation to clarify things and solidify my understanding. 
+
+1. When splitting data for the validation set or KNN or LOOCV are there any glaring warnings to be looking for, when different choice may be necessary?
+
+1. When we are assessing the Test MSE and Train MSE page 3 of chapter 3 notes and what is best for one is worst for the other, would estimating the test MSE lead to you to choose the most similar model?
+
+\newpage
+
+\newpage
+
+\newpage
+
+## Other questions
+
+1. I'm a little confused at how the Bayes theorem works for Linear Discriminant Analysis. Not sure about how to use it for estimating different characteristics for different predictors.
+
+1. When working with the ggpairs() function it is somewhat overwhelming to identify the relationships within the plots, is there something I can run alongside this call to gain insights of the relationships, or any reminders of what to look for visually?
+
+\newpage
+
+\newpage
+
+## Questions I originally missed in my inbox
+
+1. Choosing the "best" model sometimes feels like a mechanical switch of "which test MSE is smaller" or in general "which error is the least possible", but what I keep wondering is what about non-parametric decisions? What about a model is the best one as a tradeoff between lowest test MSE, interpretability and  computational and real-world expense? I think my question goes about whether testing which model is best can also come from a thought-process rather than a mere checking which-one-has-the-lowest-error one. 
+
+1. What about the thin difference in categorical vs quantitative in some real-world problems. If the bounds and ranges to make a quantitative variable categorical are scientifically driven and yield a more structured prediction and inference, why would sticking with the quantitative approach still be best? Is there something I am missing?
+
+1. What if the randomization process of drawing a subset of the data to make it the validation one yields a particularly-characterized validation or training sample which model's estimates would be odd and would be yielding particular results than if with a very different "randomized" subset? How can we be more conservative regarding non-meeting this assumption of non-randomized sub-sample draws, to still be safely in the validation/training split as if we had 2 datasets to use them for these reasons? 
